@@ -1,0 +1,125 @@
+import type { Housing, Potion, Accessory, SkillId, SkillCategory, Skills, Job, JobProgressState } from './types'
+
+export const housingOptions: Housing[] = [
+  {
+    id: 'simple-hut',
+    title: 'Simple Hut',
+    description: 'A humble shelter with basic comforts.',
+    xpBoost: 0.05,
+    cost: 0,
+  },
+  {
+    id: 'stone-cottage',
+    title: 'Stone Cottage',
+    description: 'Sturdy walls and a warm hearth for better focus.',
+    xpBoost: 0.12,
+    cost: 140,
+  },
+  {
+    id: 'artisan-home',
+    title: 'Artisan Home',
+    description: 'A crafted space that inspires faster learning.',
+    xpBoost: 0.2,
+    cost: 280,
+  },
+]
+
+export const shopPotions: Potion[] = [
+  {
+    id: 'focus-brew',
+    title: 'Focus Brew',
+    description: 'Boosts XP gain',
+    durationDays: 90,
+    effect: { type: 'xp', value: 0.18 },
+    cost: 60,
+  },
+  {
+    id: 'wage-elixir',
+    title: 'Wage Elixir',
+    description: 'Temporarily increases daily income',
+    durationDays: 90,
+    effect: { type: 'income', value: 0.2 },
+    cost: 85,
+  },
+  {
+    id: 'training-tonic',
+    title: 'Training Tonic',
+    description: 'Speeds job XP progress',
+    durationDays: 90,
+    effect: { type: 'jobXpRate', value: 0.25 },
+    cost: 70,
+  },
+]
+
+export const accessories: Accessory[] = [
+  {
+    id: 'artisan-chain',
+    title: 'Artisan Chain',
+    description: 'Adds a small permanent bonus to income.',
+    effect: { type: 'wage', value: 0.08 },
+    cost: 110,
+  },
+  {
+    id: 'scribe-quill',
+    title: 'Scribe Quill',
+    description: 'Improves skill XP gain through better reflection.',
+    effect: { type: 'skillXp', value: 0.12 },
+    cost: 100,
+  },
+  {
+    id: 'motivator-badge',
+    title: 'Motivator Badge',
+    description: 'Supports faster job progress.',
+    effect: { type: 'jobXpRate', value: 0.15 },
+    cost: 95,
+  },
+]
+
+export const skillMeta: Record<SkillId, { name: string; category: SkillCategory; description: string }> = {
+  physical: { name: 'Physical', category: 'Body', description: 'Strength and endurance' },
+  social: { name: 'Social', category: 'Society', description: 'Persuasion and cooperation' },
+  craft: { name: 'Craft', category: 'Body', description: 'Hands-on making and repair' },
+  knowledge: { name: 'Knowledge', category: 'Mind', description: 'Study and analysis' },
+  creativity: { name: 'Creativity', category: 'Mind', description: 'Design and invention' },
+  survival: { name: 'Survival', category: 'Society', description: 'Adaptation and resilience' },
+}
+
+export const initialSkills: Skills = {
+  physical: { level: 1, xp: 0, category: 'Body' },
+  social: { level: 1, xp: 0, category: 'Society' },
+  craft: { level: 1, xp: 0, category: 'Body' },
+  knowledge: { level: 1, xp: 0, category: 'Mind' },
+  creativity: { level: 1, xp: 0, category: 'Mind' },
+  survival: { level: 1, xp: 0, category: 'Society' },
+}
+
+export const jobs: Job[] = [
+  {
+    id: 'chef',
+    title: 'Fast Food Chef',
+    category: 'Fast Food',
+    description: 'Cook and plate meals in a busy kitchen chain.',
+    dailyWage: 14,
+    upkeep: 8,
+    requiredXpBase: 95,
+    dailyXpRate: 4,
+    skills: { craft: 8, social: 5, survival: 3 },
+  },
+  {
+    id: 'shift-supervisor',
+    title: 'Shift Supervisor',
+    category: 'Fast Food',
+    description: 'Coordinate the kitchen rush and keep service moving.',
+    dailyWage: 21,
+    upkeep: 10,
+    requiredXpBase: 130,
+    dailyXpRate: 5,
+    skills: { social: 8, craft: 6, knowledge: 4 },
+    unlock: { requiredJobId: 'chef', requiredLevel: 10 },
+  },
+]
+
+export const initialJobProgress: JobProgressState = jobs.reduce((acc, job) => {
+  acc[job.id] = { level: 1, xp: 0 }
+  return acc
+}, {} as JobProgressState)
