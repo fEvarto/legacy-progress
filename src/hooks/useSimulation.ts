@@ -102,7 +102,7 @@ export const useSimulation = () => {
   }, 0)
 
   const dailyIncome = Math.round(wageForJobLevel(currentJob, currentJobProgress.level) * (1 + potionIncomeBoost + accessoryIncomeBoost))
-  const dailySpending = currentJob.upkeep
+  const dailySpending = currentJob.upkeep + currentHouse.rent
   const skillXpMultiplier = 1 + houseXpBoost + potionXpBoost + accessorySkillXpBoost
   const jobXpMultiplier = 1 + houseXpBoost + potionJobXpBoost + accessoryJobXpBoost
   const netDaily = dailyIncome - dailySpending
@@ -116,6 +116,7 @@ export const useSimulation = () => {
   ]
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMetaLevel((prevMetaLevel) => {
       const nextXp = Math.max(prevMetaLevel.xp, averageSkillLevel(skills))
       return metaLevelFromXp(nextXp)
@@ -143,13 +144,16 @@ export const useSimulation = () => {
   }, [age, money, selectedJobId, selectedHouseId, activePotions, ownedAccessories, skills, jobProgress, generation, metaLevel, tickRate])
 
   useEffect(() => {
+    const intervalMs = Math.max(1, Math.round(1000 / tickRate))
+    const tickAmount = daysPerSecond / tickRate
+
     const interval = window.setInterval(() => {
-      setAge((prev) => roundTo(prev + daysPerSecond / 365, 3))
-      setMoney((prev) => Math.max(0, roundTo(prev + dailyIncome * daysPerSecond - dailySpending * daysPerSecond)))
-      setSkills((prevSkills) => gainExperience(prevSkills, currentJob, daysPerSecond, skillXpMultiplier))
+      setAge((prev) => prev + tickAmount / 365)
+      setMoney((prev) => Math.max(0, roundTo(prev + dailyIncome * tickAmount - dailySpending * tickAmount)))
+      setSkills((prevSkills) => gainExperience(prevSkills, currentJob, tickAmount, skillXpMultiplier))
       setJobProgress((prevProgress) => {
         const currentProgress = prevProgress[selectedJobId] ?? { level: 1, xp: 0 }
-        let xp = roundTo(currentProgress.xp + currentJob.dailyXpRate * daysPerSecond * jobXpMultiplier)
+        let xp = roundTo(currentProgress.xp + currentJob.dailyXpRate * tickAmount * jobXpMultiplier)
         let level = currentProgress.level
 
         while (xp >= requiredXpForLevel(currentJob, level)) {
@@ -164,13 +168,13 @@ export const useSimulation = () => {
       })
       setActivePotions((prev) =>
         prev
-          .map((potion) => ({ ...potion, daysLeft: Math.max(0, potion.daysLeft - daysPerSecond) }))
+          .map((potion) => ({ ...potion, daysLeft: Math.max(0, potion.daysLeft - tickAmount) }))
           .filter((potion) => potion.daysLeft > 0)
       )
-    }, 1000)
+    }, intervalMs)
 
     return () => window.clearInterval(interval)
-  }, [currentJob, dailyIncome, dailySpending, selectedJobId, skillXpMultiplier, jobXpMultiplier])
+  }, [currentJob, dailyIncome, dailySpending, selectedJobId, skillXpMultiplier, jobXpMultiplier, tickRate])
 
   useEffect(() => {
     if (money <= 0) {
@@ -189,10 +193,9 @@ export const useSimulation = () => {
   }
 
   const buyHouse = (house: Housing) => {
-    if (house.cost > money) return
-    setMoney((prev) => prev - house.cost)
-    setSelectedHouseId(house.id)
-  }
+      // No upfront cost — you just move in. Daily rent is handled through dailySpending.
+      setSelectedHouseId(house.id)
+    }
 
   const buyPotion = (potion: Potion) => {
     if (potion.cost > money) return

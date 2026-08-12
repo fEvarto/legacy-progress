@@ -30,7 +30,7 @@ export const ShopTab = ({ housingOptions, shopPotions, accessories, selectedHous
               <div className="shop-card-meta">
                 <span>XP +{Math.round(house.xpBoost * 100)}%</span>
                 <button type="button" onClick={() => onBuyHouse(house)}>
-                  {house.cost === 0 ? 'Owned' : `Buy ${house.cost}`}
+                  {house.rent === 0 ? 'Owned' : `${house.rent} per day`}
                 </button>
               </div>
             </article>

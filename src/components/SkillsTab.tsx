@@ -1,12 +1,14 @@
-import type { SkillId, Skills } from '../types'
+import type { Job, SkillId, Skills } from '../types'
 import { levelThreshold } from '../utils'
 import { skillMeta } from '../data'
 
 type SkillsTabProps = {
   skills: Skills
+  currentJob: Job
+  skillXpMultiplier: number
 }
 
-export const SkillsTab = ({ skills }: SkillsTabProps) => {
+export const SkillsTab = ({ skills, currentJob, skillXpMultiplier }: SkillsTabProps) => {
   const groupedSkills = Object.entries(skills).reduce<Record<string, Array<[string, { level: number; xp: number; category: string }]>>>((acc, entry) => {
     const [skillId, skill] = entry
     const category = skillMeta[skillId as SkillId].category
@@ -32,15 +34,20 @@ export const SkillsTab = ({ skills }: SkillsTabProps) => {
                     <th>Skill</th>
                     <th>Level</th>
                     <th>XP</th>
+                    <th>XP/day</th>
                     <th>Progress</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {entries.map(([skillId, skill]) => (
+                  {entries.map(([skillId, skill]) => {
+                    const jobSkillGain = currentJob.skills[skillId as SkillId] ?? 0
+                    const dailyXp = Math.round(jobSkillGain * skillXpMultiplier)
+                    return (
                     <tr key={skillId}>
                       <td>{skillMeta[skillId as SkillId].name}</td>
                       <td>{skill.level}</td>
                       <td>{skill.xp}/{levelThreshold(skill.level)}</td>
+                      <td>{dailyXp}</td>
                       <td>
                         <div className="progress-track skill-progress" aria-label={`${skillMeta[skillId as SkillId].name} level progress`}>
                           <div
@@ -50,7 +57,7 @@ export const SkillsTab = ({ skills }: SkillsTabProps) => {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  )})}
                 </tbody>
               </table>
             </div>

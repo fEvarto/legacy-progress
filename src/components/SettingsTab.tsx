@@ -41,7 +41,7 @@ export const SettingsTab = ({ tickRate, onSelectTickRate, onExportSave, onImport
         <div className="settings-list">
           <div className="settings-item">
             <strong>Tick rate</strong>
-            <span>Visual frame rate only — gameplay stays the same.</span>
+            <span>Simulation tick rate controls how often the game updates.</span>
           </div>
           <div className="settings-actions">
             {[30, 60].map((rate) => (

@@ -28,7 +28,7 @@ export const gainExperience = (skills: Skills, job: Job, days: number, multiplie
   Object.entries(job.skills).forEach(([skillId, gain]) => {
     const key = skillId as keyof Skills
     const current = nextSkills[key]
-    let xp = roundTo(current.xp + Math.round((gain as number) * days * 4 * multiplier))
+    let xp = roundTo(current.xp + (gain as number) * days * multiplier, 2)
     let level = current.level
 
     while (xp >= levelThreshold(level)) {
@@ -47,7 +47,7 @@ export const gainExperience = (skills: Skills, job: Job, days: number, multiplie
 }
 
 /** Meta progression – how much XP needed per meta level (spans prestiges) */
-export const metaLevelThreshold = (level: number) => 50 + ((level - 1) * 5)
+export const metaLevelThreshold = (level: number) => 25 + ((level - 1) * 5)
 
 /** Average level across all unlocked skills – drives the meta XP so it spans generations */
 export const averageSkillLevel = (skills: Skills): number => {

@@ -1,5 +1,5 @@
 import type { Job, JobProgressState } from '../types'
-import { requiredXpForLevel } from '../utils'
+import { requiredXpForLevel, wageForJobLevel } from '../utils'
 type OverviewTabProps = {
   jobs: Job[]
   jobProgress: JobProgressState
@@ -42,7 +42,7 @@ export const OverviewTab = ({ jobs, jobProgress, selectedJobId, onSelectJob }: O
                   <tbody>
                   {categoryJobs.map((job) => {
                       const jobState = jobProgress[job.id] ?? { level: 1, xp: 0 }
-                      const levelWage = Math.round(job.dailyWage * (1 + (jobState.level - 1) * 0.15))
+                      const levelWage = wageForJobLevel(job, jobState.level)
                       const nextXp = requiredXpForLevel(job, jobState.level)
                     const progressPercent = nextXp > 0 ? Math.min(100, (jobState.xp / nextXp) * 100) : 0
                       return (

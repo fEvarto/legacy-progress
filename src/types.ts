@@ -35,7 +35,7 @@ export type Housing = {
   title: string
   description: string
   xpBoost: number
-  cost: number
+  rent: number // daily money drain while living here
 }
 
 export type Potion = {
@@ -80,3 +80,4 @@ export type HeroInnate = {
   type: 'passive' | 'active'
   icon?: string
 }
+

@@ -27,6 +27,7 @@ function App() {
     dailyIncome,
     dailySpending,
     netDaily,
+    skillXpMultiplier,
     tabs,
     selectJob,
     setActiveTab,
@@ -80,7 +81,9 @@ function App() {
         />
       )}
 
-      {activeTab === 'skills' && <SkillsTab skills={skills} />}
+      {activeTab === 'skills' && (
+        <SkillsTab skills={skills} currentJob={currentJob} skillXpMultiplier={skillXpMultiplier} />
+      )}
 
       {activeTab === 'shop' && (
         <ShopTab

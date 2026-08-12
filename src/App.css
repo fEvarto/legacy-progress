@@ -540,6 +540,7 @@ input[type='range'] {
 }
 
 .table-wrapper {
+  width: 100%;
   overflow-x: auto;
 }
 
@@ -548,6 +549,7 @@ input[type='range'] {
   width: 100%;
   border-collapse: collapse;
   min-width: 720px;
+  table-layout: fixed;
 }
 
 .job-table th,
@@ -558,6 +560,21 @@ input[type='range'] {
   padding: 0.9rem 0.8rem;
   text-align: left;
   vertical-align: middle;
+  width: 20%;
+}
+
+.job-table th:first-child,
+.skill-table th:first-child,
+.job-table td:first-child,
+.skill-table td:first-child {
+  width: 24%;
+}
+
+.job-table th:last-child,
+.skill-table th:last-child,
+.job-table td:last-child,
+.skill-table td:last-child {
+  width: 28%;
 }
 
 .job-table th,
