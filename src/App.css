@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  padding: 2rem;
+  padding: 0.5rem;
 }
 
 .hero-panel,
@@ -62,8 +62,8 @@
 
 .hero-stats-grid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 0.55rem;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.25rem;
 }
 
 .hero-stat-item {
@@ -91,7 +91,7 @@
 .hero-meta-section {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.1rem;
 }
 
 .hero-meta-header {
@@ -140,26 +140,45 @@
   color: var(--text);
 }
 
-.hero-effects-slots {
+.buff-container {
   display: flex;
-  gap: 0.45rem;
   flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
-.effect-slot {
-  width: 96px;
-  height: 44px;
-  border-radius: 0.6rem;
+.buff-card {
+  min-width: 120px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 0.7rem;
+  border: 1px solid var(--border);
+  background: rgba(124, 58, 237, 0.08);
+  color: var(--text-h);
 }
 
-.effect-slot--empty {
-  border: 1px dashed var(--border);
+.buff-card--cooldown {
+  background: rgba(234, 88, 12, 0.08);
+  border-color: rgba(234, 88, 12, 0.2);
+}
+
+.buff-card--empty {
   background: rgba(200, 200, 210, 0.12);
+  border-style: dashed;
+}
+
+.buff-card__title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: var(--text);
+}
+
+.buff-card__value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-h);
 }
 
 .hero-innate-section {
@@ -234,7 +253,7 @@
 .hero-dev-skills {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.1rem;
 }
 
 .hero-dev-label {
@@ -285,7 +304,6 @@
 
 .hero-setup-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.45rem;
 }
 
@@ -888,7 +906,7 @@ input[type='range'] {
 
 @media (max-width: 900px) {
   .hero-stats-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 
   .settings-grid,

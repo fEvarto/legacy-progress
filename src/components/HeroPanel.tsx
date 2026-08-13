@@ -1,6 +1,7 @@
+
 import type { Housing, Job, JobProgressState, MetaLevel, PotionState, Skills, SkillId } from '../types'
 import { metaLevelThreshold, levelThreshold, requiredXpForLevel } from '../utils'
-import { accessories, shopPotions, skillMeta } from '../data'
+import { shopPotions, skillMeta } from '../data'
 
 type HeroPanelProps = {
   age: number
@@ -19,7 +20,7 @@ type HeroPanelProps = {
   ownedAccessories: string[]
 }
 
-export const HeroPanel = ({ age, lifespanYears, money, dailyIncome, dailySpending, netDaily, generation, metaLevel, currentJob, skills, jobProgress, currentHouse, activePotions, ownedAccessories }: HeroPanelProps) => {
+export const HeroPanel = ({ age, lifespanYears, money, dailyIncome, dailySpending, netDaily, generation, metaLevel, currentJob, skills, jobProgress, currentHouse, activePotions }: HeroPanelProps) => {
   const developingSkills = Object.entries(currentJob.skills) as [SkillId, number][]
   const progressRows = [currentJob].map((job) => {
     const state = jobProgress[job.id] ?? { level: 1, xp: 0 }
@@ -31,12 +32,16 @@ export const HeroPanel = ({ age, lifespanYears, money, dailyIncome, dailySpendin
       progress,
     }
   })
-  const currentPotionItems = activePotions
-    .map((potionState) => shopPotions.find((item) => item.id === potionState.id))
-    .filter((potion): potion is (typeof shopPotions)[number] => Boolean(potion))
-  const currentAccessoryItems = ownedAccessories
-    .map((accessoryId) => accessories.find((item) => item.id === accessoryId))
-    .filter((accessory): accessory is (typeof accessories)[number] => Boolean(accessory))
+
+  const buffEntries = activePotions.map((potionState) => {
+    const potion = shopPotions.find((item) => item.id === potionState.id)
+    return {
+      id: potionState.id,
+      title: potion?.title ?? potionState.id,
+      value: `${potionState.daysLeft.toFixed(0)}d`,
+      type: 'active' as const,
+    }
+  })
 
   return (
     <section className="hero-panel">
@@ -47,8 +52,6 @@ export const HeroPanel = ({ age, lifespanYears, money, dailyIncome, dailySpendin
         </div>
         <div className="hero-meta-track" aria-label="Meta progression">
           <div
-            className="hero-meta-fill"
-            style={{ width: `${Math.min(100, (metaLevel.xp / metaLevelThreshold(metaLevel.level)) * 100)}%` }}
           />
         </div>
       </div>
@@ -77,6 +80,10 @@ export const HeroPanel = ({ age, lifespanYears, money, dailyIncome, dailySpendin
         <div className="hero-stat-item">
           <span className="stat-label">Generation</span>
           <strong className="stat-value">#{generation}</strong>
+        </div>
+        <div className="hero-stat-item">
+          <span className="stat-label">Innate</span>
+          <strong className="stat-value">Standard</strong>
         </div>
       </div>
 
@@ -126,21 +133,23 @@ export const HeroPanel = ({ age, lifespanYears, money, dailyIncome, dailySpendin
 
       <div className="hero-effects-section">
         <div className="hero-effects-label">Buffs &amp; Debuffs</div>
-        <div className="hero-effects-slots">
-            <div className="hero-innate-section">
-          <div className="hero-innate-card hero-innate-card--empty">
-            <span>No innate ability yet</span>
-          </div>
-        </div>
-          <div className="effect-slot effect-slot--empty">
-            <span>Empty</span>
-          </div>
-          <div className="effect-slot effect-slot--empty">
-            <span>Empty</span>
-          </div>
-          <div className="effect-slot effect-slot--empty">
-            <span>Empty</span>
-          </div>
+        <div className="buff-container">
+          {buffEntries.length > 0 ? (
+            buffEntries.map((buff) => (
+              <div
+                key={`${buff.type}-${buff.id}`}
+                className="buff-card"
+              >
+                <span className="buff-card__title">{buff.title}</span>
+                <span className="buff-card__value">{buff.value}</span>
+              </div>
+            ))
+          ) : (
+            <div className="buff-card buff-card--empty">
+              <span className="buff-card__title">No active buffs</span>
+              <span className="buff-card__value">Idle</span>
+            </div>
+          )}
         </div>
         <div className="hero-setup-section">
           <div className="hero-setup-title">Current Setup</div>
@@ -149,31 +158,10 @@ export const HeroPanel = ({ age, lifespanYears, money, dailyIncome, dailySpendin
               <span className="hero-setup-label">Housing</span>
               <strong>{currentHouse.title}</strong>
             </div>
-            <div className="hero-setup-item">
-              <span className="hero-setup-label">Potions</span>
-              {currentPotionItems.length > 0 ? (
-                <div className="hero-setup-inline-list">
-                  {currentPotionItems.map((potion) => (
-                    <span key={potion.id}>{potion.title}</span>
-                  ))}
-                </div>
-              ) : (
-                <span className="hero-setup-empty">None</span>
-              )}
-            </div>
-            <div className="hero-setup-item">
-              <span className="hero-setup-label">Accessories</span>
-              {currentAccessoryItems.length > 0 ? (
-                <div className="hero-setup-inline-list">
-                  {currentAccessoryItems.map((accessory) => (
-                    <span key={accessory.id}>{accessory.title}</span>
-                  ))}
-                </div>
-              ) : (
-                <span className="hero-setup-empty">None</span>
-              )}
-            </div>
           </div>
+        </div>
+        <div className="hero-active-section">
+          <div className="hero-active-title">Active Skills</div>
         </div>
       </div>
     </section>

@@ -43,6 +43,7 @@ export type Potion = {
   title: string
   description: string
   durationDays: number
+  cooldownDays: number
   effect: { type: 'xp' | 'income' | 'jobXpRate'; value: number }
   cost: number
 }
@@ -56,6 +57,11 @@ export type Accessory = {
 }
 
 export type PotionState = {
+  id: string
+  daysLeft: number
+}
+
+export type PotionCooldown = {
   id: string
   daysLeft: number
 }

@@ -47,7 +47,7 @@ export const gainExperience = (skills: Skills, job: Job, days: number, multiplie
 }
 
 /** Meta progression – how much XP needed per meta level (spans prestiges) */
-export const metaLevelThreshold = (level: number) => 25 + ((level - 1) * 5)
+export const metaLevelThreshold = (level: number) => 30 + ((level - 1) * 5)
 
 /** Average level across all unlocked skills – drives the meta XP so it spans generations */
 export const averageSkillLevel = (skills: Skills): number => {

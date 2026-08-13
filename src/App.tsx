@@ -38,6 +38,7 @@ function App() {
     exportSave,
     importSave,
     resetProgress,
+    potionCooldowns, // added to make suggested edit work
   } = useSimulation()
 
   return (
@@ -91,7 +92,7 @@ function App() {
           shopPotions={shopPotions}
           accessories={accessories}
           selectedHouseId={selectedHouseId}
-          activePotions={activePotions}
+          potionCooldowns={potionCooldowns}
           ownedAccessories={ownedAccessories}
           onBuyHouse={buyHouse}
           onBuyPotion={buyPotion}
@@ -113,3 +114,4 @@ function App() {
 }
 
 export default App
+

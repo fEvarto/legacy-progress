@@ -71,21 +71,6 @@ export const SettingsTab = ({ tickRate, onSelectTickRate, onExportSave, onImport
 
       <section className="panel">
         <div className="panel-header">
-          <h2>Patch notes</h2>
-          <span>Recent updates</span>
-        </div>
-        <ul className="notes-list">
-          <li>
-            <strong>v0.2</strong> Added tabbed navigation and a dedicated settings panel.
-          </li>
-          <li>
-            <strong>v0.1</strong> Introduced jobs, skills, and a daily money loop.
-          </li>
-        </ul>
-      </section>
-
-      <section className="panel">
-        <div className="panel-header">
           <h2>Social</h2>
           <span>Follow the project</span>
         </div>
@@ -98,6 +83,9 @@ export const SettingsTab = ({ tickRate, onSelectTickRate, onExportSave, onImport
           </a>
           <a href="https://discord.com/" target="_blank" rel="noreferrer">
             Discord
+          </a>
+          <a href="https://discord.com/" target="_blank" rel="noreferrer">
+            Patch Notes
           </a>
         </div>
       </section>
