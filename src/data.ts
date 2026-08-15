@@ -1,4 +1,4 @@
-import type { Housing, Potion, Accessory, SkillId, SkillCategory, Skills, Job, JobProgressState } from './types'
+import type { Housing, Potion, Accessory, SkillId, Skills, Job, JobProgressState, SkillMeta } from './types'
 
 export const housingOptions: Housing[] = [
   {
@@ -85,13 +85,43 @@ export const accessories: Accessory[] = [
   },
 ]
 
-export const skillMeta: Record<SkillId, { name: string; category: SkillCategory; description: string }> = {
-  physical: { name: 'Physical', category: 'Body', description: 'Strength and endurance' },
-  social: { name: 'Social', category: 'Society', description: 'Persuasion and cooperation' },
-  craft: { name: 'Craft', category: 'Body', description: 'Hands-on making and repair' },
-  knowledge: { name: 'Knowledge', category: 'Mind', description: 'Study and analysis' },
-  creativity: { name: 'Creativity', category: 'Mind', description: 'Design and invention' },
-  survival: { name: 'Survival', category: 'Society', description: 'Adaptation and resilience' },
+export const skillMeta: Record<SkillId, SkillMeta> = {
+  physical: {
+    name: 'Physical',
+    category: 'Body',
+    description: 'Strength and endurance',
+    effects: { jobPay: 0.01 },
+  },
+  social: {
+    name: 'Social',
+    category: 'Society',
+    description: 'Persuasion and cooperation',
+    effects: { jobXp: 0.01 },
+  },
+  craft: {
+    name: 'Craft',
+    category: 'Body',
+    description: 'Hands-on making and repair',
+    effects: { skillXp: 0.01 },
+  },
+  knowledge: {
+    name: 'Knowledge',
+    category: 'Mind',
+    description: 'Study and analysis',
+    effects: { jobXp: 0.005, skillXp: 0.005 },
+  },
+  creativity: {
+    name: 'Creativity',
+    category: 'Mind',
+    description: 'Design and invention',
+    effects: { skillXp: 0.01 },
+  },
+  survival: {
+    name: 'Survival',
+    category: 'Society',
+    description: 'Adaptation and resilience',
+    effects: { jobPay: 0.005 },
+  },
 }
 
 export const initialSkills: Skills = {
@@ -126,6 +156,42 @@ export const jobs: Job[] = [
     dailyXpRate: 5,
     skills: { social: 10, craft: 10, knowledge: 10 },
     unlock: { requiredJobId: 'chef', requiredLevel: 10 },
+  },
+  {
+    id: 'assistant-manager',
+    title: 'Assistant Manager',
+    category: 'Fast Food',
+    description: 'Support the manager, train staff, and keep the restaurant organized.',
+    dailyWage: 31,
+    upkeep: 13,
+    requiredXpBase: 170,
+    dailyXpRate: 6,
+    skills: { social: 12, knowledge: 12, survival: 8 },
+    unlock: { requiredJobId: 'shift-supervisor', requiredLevel: 10 },
+  },
+  {
+    id: 'restaurant-manager',
+    title: 'Restaurant Manager',
+    category: 'Fast Food',
+    description: 'Run the restaurant, manage performance, and deliver strong results.',
+    dailyWage: 45,
+    upkeep: 16,
+    requiredXpBase: 220,
+    dailyXpRate: 7,
+    skills: { social: 14, knowledge: 14, creativity: 8 },
+    unlock: { requiredJobId: 'assistant-manager', requiredLevel: 10 },
+  },
+  {
+    id: 'regional-manager',
+    title: 'Regional Manager',
+    category: 'Fast Food',
+    description: 'Lead several restaurants and set standards across the region.',
+    dailyWage: 65,
+    upkeep: 20,
+    requiredXpBase: 280,
+    dailyXpRate: 8,
+    skills: { social: 16, knowledge: 16, creativity: 10, survival: 10 },
+    unlock: { requiredJobId: 'restaurant-manager', requiredLevel: 10 },
   },
 ]
 

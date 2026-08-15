@@ -33,33 +33,43 @@ export const SkillsTab = ({ skills, currentJob, skillXpMultiplier }: SkillsTabPr
                   <tr>
                     <th>Skill</th>
                     <th>Level</th>
-                    <th>XP</th>
                     <th>XP/day</th>
+                    <th>Effects</th>
                     <th>Progress</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {entries.map(([skillId, skill]) => {
-                    const jobSkillGain = currentJob.skills[skillId as SkillId] ?? 0
-                    const dailyXp = Math.round(jobSkillGain * skillXpMultiplier)
+                                    {entries.map(([skillId, skill]) => {
+                                      const jobSkillGain = currentJob.skills[skillId as SkillId] ?? 0
+                                      const dailyXp = Math.round(jobSkillGain * skillXpMultiplier)
+                                      const effects = Object.entries(skillMeta[skillId as SkillId].effects ?? {})
+                                        .map(([effect, value]) => {
+                                          const currentBonus = Math.max(0, skill.level - 1) * value
+                                          const label = effect === 'jobXp' ? 'Current job XP' : effect === 'jobPay' ? 'Current job pay' : 'Skill XP'
+                                          return `${label} +${(currentBonus * 100).toFixed(1)}% (×${(1 + currentBonus).toFixed(3)})`
+                                        })
+
                     return (
-                    <tr key={skillId}>
-                      <td>{skillMeta[skillId as SkillId].name}</td>
-                      <td>{skill.level}</td>
-                      <td>{skill.xp}/{levelThreshold(skill.level)}</td>
-                      <td>{dailyXp}</td>
-                      <td>
-                        <div className="progress-track skill-progress" aria-label={`${skillMeta[skillId as SkillId].name} level progress`}>
-                          <div
-                            className="progress-fill"
-                            style={{ width: `${Math.min(100, (skill.xp / levelThreshold(skill.level)) * 100)}%` }}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  )})}
+                      <tr key={skillId}>
+                        <td>{skillMeta[skillId as SkillId].name}</td>
+                        <td>{skill.level}</td>
+                        <td>{dailyXp}</td>
+                        <td>{effects.length > 0 ? effects.join(', ') : '—'}</td>
+                        <td>
+                          <div className="progress-track skill-progress" aria-label={`${skillMeta[skillId as SkillId].name} level progress`}>
+                            <div
+                              className="progress-fill"
+                              style={{ width: `${Math.min(100, (skill.xp / levelThreshold(skill.level)) * 100)}%` }}
+                            />
+                          </div>
+                        </td>
+
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
+
             </div>
           </div>
         ))}

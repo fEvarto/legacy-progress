@@ -1,11 +1,22 @@
 export type SkillId = 'physical' | 'social' | 'craft' | 'knowledge' | 'creativity' | 'survival'
 export type SkillCategory = 'Body' | 'Mind' | 'Society'
+export type SkillEffectType = 'jobXp' | 'jobPay' | 'skillXp'
 export type TabId = 'overview' | 'skills' | 'economy' | 'shop' | 'settings'
+
+export type SkillEffects = Partial<Record<SkillEffectType, number>>
 
 export type SkillState = {
   level: number
   xp: number
   category: SkillCategory
+}
+
+export type SkillMeta = {
+  name: string
+  category: SkillCategory
+  description: string
+  // Bonus to the corresponding multiplier for each level above level 1.
+  effects?: SkillEffects
 }
 
 export type Skills = Record<SkillId, SkillState>

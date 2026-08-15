@@ -18,6 +18,7 @@ import {
   metaLevelFromXp,
   requiredXpForLevel,
   roundTo,
+  skillEffectMultiplier,
   wageForJobLevel,
 } from '../utils'
 
@@ -127,12 +128,19 @@ export const useSimulation = () => {
     return accessory && accessory.effect.type === 'jobXpRate' ? sum + accessory.effect.value : sum
   }, 0)
 
+  // Skill effects are level-based: level 1 is the baseline and every level after
+  // that adds the configured bonus. Shop and housing bonuses stack additively.
+  const skillEffectPayMultiplier = skillEffectMultiplier(skills, 'jobPay')
+  const skillEffectJobXpMultiplier = skillEffectMultiplier(skills, 'jobXp')
+  const skillEffectSkillXpMultiplier = skillEffectMultiplier(skills, 'skillXp')
   const dailyIncome = Math.round(
-    wageForJobLevel(currentJob, currentJobProgress.level) * (1 + potionIncomeBoost + accessoryIncomeBoost),
+    wageForJobLevel(currentJob, currentJobProgress.level) *
+      (1 + potionIncomeBoost + accessoryIncomeBoost) *
+      skillEffectPayMultiplier,
   )
   const dailySpending = currentJob.upkeep + currentHouse.rent
-  const skillXpMultiplier = 1 + houseXpBoost + potionXpBoost + accessorySkillXpBoost
-  const jobXpMultiplier = 1 + houseXpBoost + potionJobXpBoost + accessoryJobXpBoost
+  const skillXpMultiplier = (1 + houseXpBoost + potionXpBoost + accessorySkillXpBoost) * skillEffectSkillXpMultiplier
+  const jobXpMultiplier = (1 + houseXpBoost + potionJobXpBoost + accessoryJobXpBoost) * skillEffectJobXpMultiplier
   const netDaily = dailyIncome - dailySpending
   const requiredXp = requiredXpForLevel(currentJob, currentJobProgress.level)
   const jobXpPercent = Math.min(100, (currentJobProgress.xp / requiredXp) * 100)

@@ -1,5 +1,7 @@
-import type { Job, JobProgressState } from '../types'
-import { requiredXpForLevel, wageForJobLevel } from '../utils'
+import type { Job, JobProgressState, SkillId } from '../types'
+import { skillMeta } from '../data'
+import { isJobUnlocked, requiredXpForLevel, wageForJobLevel } from '../utils'
+
 type OverviewTabProps = {
   jobs: Job[]
   jobProgress: JobProgressState
@@ -30,44 +32,72 @@ export const OverviewTab = ({ jobs, jobProgress, selectedJobId, onSelectJob }: O
             </div>
             <div className="table-wrapper">
               <table className="job-table">
-                <thead>
+                                <thead>
                   <tr>
                     <th>Job</th>
                     <th>Level</th>
                     <th>Wage/day</th>
-                    <th>XP/day</th>
-                <th>Progress</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                  {categoryJobs.map((job) => {
+                    <th>Job XP/day</th>
+                    <th>Improving skills</th>
+                    <th>Progress</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(() => {
+                    const firstLockedIndex = categoryJobs.findIndex((job) => !isJobUnlocked(job, jobProgress))
+                    const visibleJobs = firstLockedIndex === -1 ? categoryJobs : categoryJobs.slice(0, firstLockedIndex + 1)
+
+                    return visibleJobs.map((job) => {
+                      const unlocked = isJobUnlocked(job, jobProgress)
                       const jobState = jobProgress[job.id] ?? { level: 1, xp: 0 }
+
                       const levelWage = wageForJobLevel(job, jobState.level)
                       const nextXp = requiredXpForLevel(job, jobState.level)
-                    const progressPercent = nextXp > 0 ? Math.min(100, (jobState.xp / nextXp) * 100) : 0
+                                          const progressPercent = nextXp > 0 ? Math.min(100, (jobState.xp / nextXp) * 100) : 0
+                      const improvingSkills = Object.entries(job.skills)
+                        .map(([skillId]) => `${skillMeta[skillId as SkillId].name}`)
+                        .join(', ')
+                      const requiredJob = job.unlock ? jobs.find((item) => item.id === job.unlock?.requiredJobId) : undefined
+                      const requirement = job.unlock && requiredJob
+                        ? `Requires ${requiredJob.title} level ${job.unlock.requiredLevel}`
+                        : undefined
+
                       return (
-                  <tr
-                    key={job.id}
-                    className={selectedJobId === job.id ? 'selected-row' : ''}
-                    onClick={() => onSelectJob(job.id)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') onSelectJob(job.id)
-                    }}
-                  >
-                    <td>{job.title}</td>
-                    <td>{jobState.level}</td>
-                    <td>{levelWage}</td>
-                    <td>{job.dailyXpRate}</td>
+                        <tr
+                          key={job.id}
+                          className={`${selectedJobId === job.id ? 'selected-row' : ''} ${!unlocked ? 'locked-row' : ''}`}
+                          onClick={() => unlocked && onSelectJob(job.id)}
+                          role={unlocked ? 'button' : undefined}
+                          tabIndex={unlocked ? 0 : -1}
+                          onKeyDown={(e) => {
+                            if (unlocked && (e.key === 'Enter' || e.key === ' ')) onSelectJob(job.id)
+                          }}
+                          aria-label={unlocked ? job.title : `${job.title}. ${requirement ?? 'Locked'}`}
+                        >
                           <td>
-                      <div className="progress-track job-progress" aria-label={`${job.title} level progress`}>
-                        <div className="progress-fill" style={{ width: `${progressPercent}%` }} />
+                            <div className="job-name-cell">
+                              <span>{job.title}</span>
+                              {!unlocked && <small className="job-requirement">{requirement}</small>}
+                            </div>
+                          </td>
+                          <td>{unlocked ? jobState.level : '—'}</td>
+                          <td>{unlocked ? levelWage : '—'}</td>
+                          <td>{unlocked ? job.dailyXpRate : '—'}</td>
+                          <td>{unlocked ? improvingSkills : '—'}</td>
+                          <td>
+                            {unlocked ? (
+                              <div className="progress-track job-progress" aria-label={`${job.title} level progress`}>
+                                <div className="progress-fill" style={{ width: `${progressPercent}%` }} />
                               </div>
+                            ) : (
+                              <span className="locked-requirement">{requirement}</span>
+                            )}
                           </td>
                         </tr>
                       )
-                    })}
+                    })
+                  })()}
+
                   </tbody>
                 </table>
               </div>

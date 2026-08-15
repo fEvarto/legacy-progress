@@ -621,6 +621,28 @@ input[type='range'] {
   background: rgba(170, 59, 255, 0.12);
 }
 
+.locked-row {
+  cursor: not-allowed !important;
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--text);
+}
+
+.locked-row:hover {
+  background: rgba(148, 163, 184, 0.12) !important;
+}
+
+.job-name-cell {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.job-requirement,
+.locked-requirement {
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
 .job-progress {
   min-width: 130px;
 }

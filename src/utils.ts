@@ -1,4 +1,5 @@
-import type { Skills, Job, JobProgressState, MetaLevel } from './types'
+import type { Skills, Job, JobProgressState, MetaLevel, SkillEffectType } from './types'
+import { skillMeta } from './data'
 
 /** Round a number to a given number of decimal places, avoiding floating-point drift */
 export const roundTo = (value: number, decimals: number = 2): number => {
@@ -6,10 +7,10 @@ export const roundTo = (value: number, decimals: number = 2): number => {
   return Math.round(value * factor) / factor
 }
 
-export const levelThreshold = (level: number) => 100 + (level - 1) * 60
+export const levelThreshold = (level: number) => 100 * Math.pow(1.1, level - 1)
 
 export const requiredXpForLevel = (job: Job, level: number) =>
-  Math.round(job.requiredXpBase * (1 + (level - 1) * 0.45))
+  Math.round(job.requiredXpBase * Math.pow(1.5, level - 1))
 
 export const wageMultiplierForLevel = (level: number) => 1 + Math.log10(Math.max(level, 1)) * 0.32
 
@@ -20,6 +21,15 @@ export const isJobUnlocked = (job: Job, jobProgress: JobProgressState) => {
 
   const requiredProgress = jobProgress[job.unlock.requiredJobId] ?? { level: 1, xp: 0 }
   return requiredProgress.level >= job.unlock.requiredLevel
+}
+
+export const skillEffectMultiplier = (skills: Skills, effectType: SkillEffectType): number => {
+  const bonus = Object.entries(skills).reduce((sum, [skillId, skill]) => {
+    const effect = skillMeta[skillId as keyof Skills].effects?.[effectType] ?? 0
+    return sum + Math.max(0, skill.level - 1) * effect
+  }, 0)
+
+  return 1 + bonus
 }
 
 export const gainExperience = (skills: Skills, job: Job, days: number, multiplier: number) => {
@@ -47,7 +57,7 @@ export const gainExperience = (skills: Skills, job: Job, days: number, multiplie
 }
 
 /** Meta progression – how much XP needed per meta level (spans prestiges) */
-export const metaLevelThreshold = (level: number) => 30 + ((level - 1) * 5)
+export const metaLevelThreshold = (level: number) => 40 + ((level - 1) * 5)
 
 /** Average level across all unlocked skills – drives the meta XP so it spans generations */
 export const averageSkillLevel = (skills: Skills): number => {

@@ -109,7 +109,7 @@ export const HeroPanel = ({ age, lifespanYears, money, dailyIncome, dailySpendin
         <div className="hero-dev-skills">
           <span className="hero-dev-label">Developing Skills</span>
           <div className="hero-dev-list">
-            {developingSkills.map(([skillId, gain]) => {
+            {developingSkills.map(([skillId]) => {
               const skill = skills[skillId]
               const meta = skillMeta[skillId]
               const threshold = levelThreshold(skill.level)
@@ -119,7 +119,6 @@ export const HeroPanel = ({ age, lifespanYears, money, dailyIncome, dailySpendin
                   <div className="hero-dev-skill-header">
                     <span className="hero-dev-skill-name">{meta.name}</span>
                     <span className="hero-dev-skill-level">Lv.{skill.level}</span>
-                    <span className="hero-dev-skill-gain">+{gain}/s</span>
                   </div>
                   <div className="progress-track" aria-label={`${meta.name} development`}>
                     <div className="progress-fill" style={{ width: `${progress}%` }} />
