@@ -1,7 +1,22 @@
 export type SkillId = 'physical' | 'social' | 'craft' | 'knowledge' | 'creativity' | 'survival'
 export type SkillCategory = 'Body' | 'Mind' | 'Society'
 export type SkillEffectType = 'jobXp' | 'jobPay' | 'skillXp'
-export type TabId = 'overview' | 'skills' | 'economy' | 'shop' | 'settings'
+export type TabId = 'overview' | 'skills' | 'economy' | 'shop' | 'prestige' | 'settings'
+
+export type Innate = {
+  id: string
+  title: string
+  description: string
+  effect: { type: 'xp' | 'income' | 'skillXp'; value: number }
+}
+
+export type PrestigeResearch = {
+  id: string
+  title: string
+  description: string
+  cost: number
+  effect: { type: 'xp' | 'income' | 'skillXp'; value: number }
+}
 
 export type SkillEffects = Partial<Record<SkillEffectType, number>>
 
@@ -15,6 +30,8 @@ export type SkillMeta = {
   name: string
   category: SkillCategory
   description: string
+  // Other skills (and their levels) required before this skill becomes available.
+  requirements?: Partial<Record<SkillId, number>>
   // Bonus to the corresponding multiplier for each level above level 1.
   effects?: SkillEffects
 }
@@ -36,6 +53,8 @@ export type Job = {
   requiredXpBase: number
   dailyXpRate: number
   skills: Partial<Record<SkillId, number>>
+  // Skill levels required to take this job, in addition to the job unlock chain.
+  requiredSkills?: Partial<Record<SkillId, number>>
   unlock?: JobUnlock
 }
 

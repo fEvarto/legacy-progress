@@ -1,5 +1,5 @@
 import type { Job, SkillId, Skills } from '../types'
-import { levelThreshold } from '../utils'
+import { isSkillUnlocked, levelThreshold } from '../utils'
 import { skillMeta } from '../data'
 
 type SkillsTabProps = {
@@ -39,27 +39,37 @@ export const SkillsTab = ({ skills, currentJob, skillXpMultiplier }: SkillsTabPr
                   </tr>
                 </thead>
                 <tbody>
-                                    {entries.map(([skillId, skill]) => {
-                                      const jobSkillGain = currentJob.skills[skillId as SkillId] ?? 0
-                                      const dailyXp = Math.round(jobSkillGain * skillXpMultiplier)
-                                      const effects = Object.entries(skillMeta[skillId as SkillId].effects ?? {})
+                                                      {entries.map(([skillId, skill]) => {
+                    const key = skillId as SkillId
+                                      const unlocked = isSkillUnlocked(key, skills)
+                                      const skillRequirements = Object.entries(skillMeta[key].requirements ?? {})
+                                        .map(([requiredSkillId, level]) => `${skillMeta[requiredSkillId as SkillId].name} ${level}`)
+                                        .join(', ')
+                                      const jobSkillGain = currentJob.skills[key] ?? 0
+                                      const dailyXp = unlocked ? Math.round(jobSkillGain * skillXpMultiplier) : 0
+                                      const effects = unlocked ? Object.entries(skillMeta[key].effects ?? {})
                                         .map(([effect, value]) => {
                                           const currentBonus = Math.max(0, skill.level - 1) * value
                                           const label = effect === 'jobXp' ? 'Current job XP' : effect === 'jobPay' ? 'Current job pay' : 'Skill XP'
-                                          return `${label} +${(currentBonus * 100).toFixed(1)}% (×${(1 + currentBonus).toFixed(3)})`
-                                        })
+                                                                                    return `${label} +${(currentBonus * 100).toFixed(1)}% (×${(1 + currentBonus).toFixed(3)})`
+                                        }) : []
 
                     return (
-                      <tr key={skillId}>
-                        <td>{skillMeta[skillId as SkillId].name}</td>
-                        <td>{skill.level}</td>
+                                            <tr key={skillId} className={!unlocked ? 'locked-row' : ''}>
+                        <td>
+                          <div className="job-name-cell">
+                            <span>{skillMeta[key].name}</span>
+                            {!unlocked && <small className="job-requirement">Requires {skillRequirements}</small>}
+                          </div>
+                        </td>
+                        <td>{unlocked ? skill.level : '—'}</td>
                         <td>{dailyXp}</td>
                         <td>{effects.length > 0 ? effects.join(', ') : '—'}</td>
                         <td>
                           <div className="progress-track skill-progress" aria-label={`${skillMeta[skillId as SkillId].name} level progress`}>
-                            <div
+                                                        <div
                               className="progress-fill"
-                              style={{ width: `${Math.min(100, (skill.xp / levelThreshold(skill.level)) * 100)}%` }}
+                              style={{ width: `${unlocked ? Math.min(100, (skill.xp / levelThreshold(skill.level)) * 100) : 0}%` }}
                             />
                           </div>
                         </td>

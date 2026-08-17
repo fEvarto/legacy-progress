@@ -4,7 +4,8 @@ import { OverviewTab } from './components/OverviewTab'
 import { SettingsTab } from './components/SettingsTab'
 import { ShopTab } from './components/ShopTab'
 import { SkillsTab } from './components/SkillsTab'
-import { accessories, housingOptions, jobs, shopPotions } from './data'
+import { PrestigeTab } from './components/PrestigeTab'
+import { accessories, housingOptions, jobs, shopPotions, innates, prestigeResearches } from './data'
 import { useSimulation } from './hooks/useSimulation'
 
 function App() {
@@ -20,6 +21,12 @@ function App() {
     jobProgress,
     generation,
     metaLevel,
+    runMetaXp,
+    bestMetaLevel,
+    metaPoints,
+    purchasedResearches,
+    selectedInnateId,
+    runStarted,
     tickRate,
     activeTab,
     currentJob,
@@ -38,7 +45,11 @@ function App() {
     exportSave,
     importSave,
     resetProgress,
-    potionCooldowns, // added to make suggested edit work
+    chooseInnate,
+    startRun,
+    prestige,
+    buyResearch,
+    potionCooldowns,
   } = useSimulation()
 
   return (
@@ -58,6 +69,7 @@ function App() {
         currentHouse={currentHouse}
         activePotions={activePotions}
         ownedAccessories={ownedAccessories}
+        innateTitle={innates.find((innate) => innate.id === selectedInnateId)?.title}
       />
 
       <nav className="tab-bar" aria-label="Simulation sections">
@@ -77,6 +89,7 @@ function App() {
         <OverviewTab
           jobs={jobs}
           jobProgress={jobProgress}
+          skills={skills}
           selectedJobId={selectedJobId}
           onSelectJob={selectJob}
         />
@@ -97,6 +110,24 @@ function App() {
           onBuyHouse={buyHouse}
           onBuyPotion={buyPotion}
           onBuyAccessory={buyAccessory}
+        />
+      )}
+
+      {activeTab === 'prestige' && (
+        <PrestigeTab
+          innates={innates}
+          researches={prestigeResearches}
+          selectedInnateId={selectedInnateId}
+          runStarted={runStarted}
+          runMetaXp={runMetaXp}
+          metaLevel={metaLevel.level}
+          bestMetaLevel={bestMetaLevel}
+          metaPoints={metaPoints}
+          purchasedResearches={purchasedResearches}
+          onChooseInnate={chooseInnate}
+          onStartRun={startRun}
+          onPrestige={prestige}
+          onBuyResearch={buyResearch}
         />
       )}
 

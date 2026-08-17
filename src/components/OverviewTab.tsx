@@ -1,15 +1,16 @@
-import type { Job, JobProgressState, SkillId } from '../types'
+import type { Job, JobProgressState, SkillId, Skills } from '../types'
 import { skillMeta } from '../data'
 import { isJobUnlocked, requiredXpForLevel, wageForJobLevel } from '../utils'
 
 type OverviewTabProps = {
   jobs: Job[]
   jobProgress: JobProgressState
+  skills: Skills
   selectedJobId: string
   onSelectJob: (jobId: string) => void
 }
 
-export const OverviewTab = ({ jobs, jobProgress, selectedJobId, onSelectJob }: OverviewTabProps) => {
+export const OverviewTab = ({ jobs, jobProgress, skills, selectedJobId, onSelectJob }: OverviewTabProps) => {
   const groupedJobs = jobs.reduce<Record<string, Job[]>>((acc, job) => {
     const category = job.category
     if (!acc[category]) acc[category] = []
@@ -44,11 +45,11 @@ export const OverviewTab = ({ jobs, jobProgress, selectedJobId, onSelectJob }: O
                 </thead>
                 <tbody>
                   {(() => {
-                    const firstLockedIndex = categoryJobs.findIndex((job) => !isJobUnlocked(job, jobProgress))
+                    const firstLockedIndex = categoryJobs.findIndex((job) => !isJobUnlocked(job, jobProgress, skills))
                     const visibleJobs = firstLockedIndex === -1 ? categoryJobs : categoryJobs.slice(0, firstLockedIndex + 1)
 
                     return visibleJobs.map((job) => {
-                      const unlocked = isJobUnlocked(job, jobProgress)
+                      const unlocked = isJobUnlocked(job, jobProgress, skills)
                       const jobState = jobProgress[job.id] ?? { level: 1, xp: 0 }
 
                       const levelWage = wageForJobLevel(job, jobState.level)
@@ -57,10 +58,14 @@ export const OverviewTab = ({ jobs, jobProgress, selectedJobId, onSelectJob }: O
                       const improvingSkills = Object.entries(job.skills)
                         .map(([skillId]) => `${skillMeta[skillId as SkillId].name}`)
                         .join(', ')
-                      const requiredJob = job.unlock ? jobs.find((item) => item.id === job.unlock?.requiredJobId) : undefined
-                      const requirement = job.unlock && requiredJob
-                        ? `Requires ${requiredJob.title} level ${job.unlock.requiredLevel}`
-                        : undefined
+                                            const requiredJob = job.unlock ? jobs.find((item) => item.id === job.unlock?.requiredJobId) : undefined
+                      const skillRequirements = Object.entries(job.requiredSkills ?? {})
+                        .map(([skillId, level]) => `${skillMeta[skillId as SkillId].name} level ${level}`)
+                      const requirements = [
+                        job.unlock && requiredJob ? `${requiredJob.title} level ${job.unlock.requiredLevel}` : '',
+                        ...skillRequirements,
+                      ].filter(Boolean)
+                      const requirement = requirements.length > 0 ? `Requires ${requirements.join(' and ')}` : 'Locked'
 
                       return (
                         <tr

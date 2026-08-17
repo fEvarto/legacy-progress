@@ -18,9 +18,10 @@ type HeroPanelProps = {
   currentHouse: Housing
   activePotions: PotionState[]
   ownedAccessories: string[]
+  innateTitle?: string
 }
 
-export const HeroPanel = ({ age, lifespanYears, money, dailyIncome, dailySpending, netDaily, generation, metaLevel, currentJob, skills, jobProgress, currentHouse, activePotions }: HeroPanelProps) => {
+export const HeroPanel = ({ age, lifespanYears, money, dailyIncome, dailySpending, netDaily, generation, metaLevel, currentJob, skills, jobProgress, currentHouse, activePotions, innateTitle }: HeroPanelProps) => {
   const developingSkills = Object.entries(currentJob.skills) as [SkillId, number][]
   const progressRows = [currentJob].map((job) => {
     const state = jobProgress[job.id] ?? { level: 1, xp: 0 }
@@ -66,16 +67,8 @@ export const HeroPanel = ({ age, lifespanYears, money, dailyIncome, dailySpendin
           <strong className="stat-value">{Math.round(money)}</strong>
         </div>
         <div className="hero-stat-item">
-          <span className="stat-label">Income / day</span>
-          <strong className="stat-value">{dailyIncome}</strong>
-        </div>
-        <div className="hero-stat-item">
-          <span className="stat-label">Spending / day</span>
-          <strong className="stat-value">{dailySpending}</strong>
-        </div>
-        <div className="hero-stat-item">
-          <span className="stat-label">Net / day</span>
-          <strong className={`stat-value ${netDaily >= 0 ? 'positive' : 'negative'}`}>{netDaily}</strong>
+          <span className="stat-label">Daily saldo</span>
+          <strong className="stat-value">{dailyIncome}/-{dailySpending}/{netDaily}</strong>
         </div>
         <div className="hero-stat-item">
           <span className="stat-label">Generation</span>
@@ -83,7 +76,7 @@ export const HeroPanel = ({ age, lifespanYears, money, dailyIncome, dailySpendin
         </div>
         <div className="hero-stat-item">
           <span className="stat-label">Innate</span>
-          <strong className="stat-value">Standard</strong>
+          <strong className="stat-value">{innateTitle ?? 'None'}</strong>
         </div>
       </div>
 

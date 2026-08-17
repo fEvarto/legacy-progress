@@ -1,4 +1,16 @@
-import type { Housing, Potion, Accessory, SkillId, Skills, Job, JobProgressState, SkillMeta } from './types'
+import type { Housing, Potion, Accessory, SkillId, Skills, Job, JobProgressState, SkillMeta, Innate, PrestigeResearch } from './types'
+
+export const innates: Innate[] = [
+  { id: 'quick-study', title: 'Quick Study', description: '+15% to all XP gained this run.', effect: { type: 'xp', value: 0.15 } },
+  { id: 'golden-touch', title: 'Golden Touch', description: '+20% income this run.', effect: { type: 'income', value: 0.2 } },
+  { id: 'natural-teacher', title: 'Natural Teacher', description: '+25% skill XP gained this run.', effect: { type: 'skillXp', value: 0.25 } },
+]
+
+export const prestigeResearches: PrestigeResearch[] = [
+  { id: 'second-chance', title: 'Second Chance', description: 'Unlock a stronger choice of innates.', cost: 5, effect: { type: 'xp', value: 0.05 } },
+  { id: 'deep-roots', title: 'Deep Roots', description: '+10% skill XP in every future run.', cost: 10, effect: { type: 'skillXp', value: 0.1 } },
+  { id: 'prosperity', title: 'Prosperity', description: '+10% income in every future run.', cost: 15, effect: { type: 'income', value: 0.1 } },
+]
 
 export const housingOptions: Housing[] = [
   {
@@ -114,12 +126,14 @@ export const skillMeta: Record<SkillId, SkillMeta> = {
     name: 'Creativity',
     category: 'Mind',
     description: 'Design and invention',
+    requirements: { knowledge: 10 },
     effects: { skillXp: 0.01 },
   },
   survival: {
     name: 'Survival',
     category: 'Society',
     description: 'Adaptation and resilience',
+    requirements: { knowledge: 20 },
     effects: { jobPay: 0.005 },
   },
 }
@@ -143,7 +157,8 @@ export const jobs: Job[] = [
     upkeep: 8,
     requiredXpBase: 95,
     dailyXpRate: 4,
-    skills: { craft: 10, social: 10, survival: 10 },
+    skills: { knowledge: 10, craft: 10, social: 10 },
+    requiredSkills: { physical: 1, social: 1, craft: 1 },
   },
   {
     id: 'shift-supervisor',
@@ -154,7 +169,8 @@ export const jobs: Job[] = [
     upkeep: 10,
     requiredXpBase: 130,
     dailyXpRate: 5,
-    skills: { social: 10, craft: 10, knowledge: 10 },
+    skills: { social: 10, survival: 10, knowledge: 10 },
+    requiredSkills: { knowledge: 25 },
     unlock: { requiredJobId: 'chef', requiredLevel: 10 },
   },
   {
@@ -166,7 +182,8 @@ export const jobs: Job[] = [
     upkeep: 13,
     requiredXpBase: 170,
     dailyXpRate: 6,
-    skills: { social: 12, knowledge: 12, survival: 8 },
+    skills: { social: 10, knowledge: 10, creativity: 10 },
+    requiredSkills: { survival: 30 },
     unlock: { requiredJobId: 'shift-supervisor', requiredLevel: 10 },
   },
   {
@@ -178,7 +195,8 @@ export const jobs: Job[] = [
     upkeep: 16,
     requiredXpBase: 220,
     dailyXpRate: 7,
-    skills: { social: 14, knowledge: 14, creativity: 8 },
+    skills: { social: 10, knowledge: 10, creativity: 10 },
+    requiredSkills: { creativity: 35 },
     unlock: { requiredJobId: 'assistant-manager', requiredLevel: 10 },
   },
   {
@@ -190,7 +208,8 @@ export const jobs: Job[] = [
     upkeep: 20,
     requiredXpBase: 280,
     dailyXpRate: 8,
-    skills: { social: 16, knowledge: 16, creativity: 10, survival: 10 },
+    skills: { social: 10, knowledge: 10, creativity: 10 },
+    requiredSkills: { creativity: 40, survival: 40 },
     unlock: { requiredJobId: 'restaurant-manager', requiredLevel: 10 },
   },
 ]
