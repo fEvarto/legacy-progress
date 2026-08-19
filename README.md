@@ -25,43 +25,6 @@ Prestige is intentionally restricted until the hero reaches 90% of the configure
 - [Vite](https://vite.dev/)
 - CSS with a component-oriented React structure
 
-## Requirements
-
-- Node.js (LTS recommended)
-- npm
-
-## Getting started
-
-```bash
-npm install
-npm run dev
-```
-
-Vite will print the local development URL in the terminal, usually `http://localhost:5173`.
-
-## Available scripts
-
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Start the Vite development server with hot reload. |
-| `npm run build` | Type-check and create a production build. |
-| `npm run preview` | Preview the production build locally. |
-| `npm run lint` | Run ESLint across the project. |
-
-## Project structure
-
-```text
-src/
-├── components/       Reusable interface panels and tabs
-├── hooks/             Simulation state and game loop logic
-├── assets/            Static application assets
-├── data.ts            Jobs, skills, items, innates, and research definitions
-├── types.ts           Shared TypeScript domain types
-├── utils.ts           Progression, multiplier, and calculation helpers
-├── App.tsx            Application composition and tab navigation
-└── main.tsx           React application entry point
-```
-
 ## License
 
 This project is distributed under the MIT License. See [LICENSE](LICENSE) for the license text.
