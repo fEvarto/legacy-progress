@@ -7,7 +7,7 @@ export const roundTo = (value: number, decimals: number = 2): number => {
   return Math.round(value * factor) / factor
 }
 
-export const levelThreshold = (level: number) => 100 * Math.pow(1.1, level - 1)
+export const levelThreshold = (level: number) => 100 * Math.pow(1.09, level - 1)
 
 export const requiredXpForLevel = (job: Job, level: number) =>
   Math.round(job.requiredXpBase * Math.pow(1.5, level - 1))
@@ -37,15 +37,13 @@ export const isJobUnlocked = (job: Job, jobProgress: JobProgressState, skills: S
   return jobChainUnlocked && areSkillRequirementsMet(job.requiredSkills, skills)
 }
 
-export const skillEffectMultiplier = (skills: Skills, effectType: SkillEffectType): number => {
-  const bonus = Object.entries(skills).reduce((sum, [skillId, skill]) => {
-    if (!isSkillUnlocked(skillId as keyof Skills, skills)) return sum
+export const skillEffectMultiplier = (skills: Skills, effectType: SkillEffectType): number =>
+  Object.entries(skills).reduce((multiplier, [skillId, skill]) => {
+    if (!isSkillUnlocked(skillId as keyof Skills, skills)) return multiplier
     const effect = skillMeta[skillId as keyof Skills].effects?.[effectType] ?? 0
-    return sum + Math.max(0, skill.level - 1) * effect
-  }, 0)
-
-  return 1 + bonus
-}
+    const bonus = Math.max(0, skill.level - 1) * effect
+    return multiplier * (1 + bonus)
+  }, 1)
 
 export const gainExperience = (skills: Skills, job: Job, days: number, multiplier: number) => {
   const nextSkills = { ...skills }
@@ -73,7 +71,7 @@ export const gainExperience = (skills: Skills, job: Job, days: number, multiplie
 }
 
 /** Meta progression – how much XP needed per meta level (spans prestiges) */
-export const metaLevelThreshold = (level: number) => 40 + ((level - 1) * 5)
+export const metaLevelThreshold = (level: number) => 50 + ((level - 1) * 5)
 
 /** Average level across all unlocked skills – drives the meta XP so it spans generations */
 export const averageSkillLevel = (skills: Skills): number => {

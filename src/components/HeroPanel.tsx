@@ -76,7 +76,7 @@ export const HeroPanel = ({ age, lifespanYears, money, dailyIncome, dailySpendin
         </div>
         <div className="hero-stat-item">
           <span className="stat-label">Innate</span>
-          <strong className="stat-value">{innateTitle ?? 'None'}</strong>
+          <strong className="stat-value">{innateTitle ?? 'Standard'}</strong>
         </div>
       </div>
 

@@ -25,6 +25,8 @@ function App() {
     bestMetaLevel,
     metaPoints,
     purchasedResearches,
+    researchInvestments,
+    availableInnateIds,
     selectedInnateId,
     runStarted,
     tickRate,
@@ -48,7 +50,7 @@ function App() {
     chooseInnate,
     startRun,
     prestige,
-    buyResearch,
+    investResearch,
     potionCooldowns,
   } = useSimulation()
 
@@ -117,17 +119,21 @@ function App() {
         <PrestigeTab
           innates={innates}
           researches={prestigeResearches}
+          availableInnateIds={availableInnateIds}
           selectedInnateId={selectedInnateId}
           runStarted={runStarted}
+          age={age}
+          lifespanYears={lifespanYears}
           runMetaXp={runMetaXp}
           metaLevel={metaLevel.level}
           bestMetaLevel={bestMetaLevel}
           metaPoints={metaPoints}
           purchasedResearches={purchasedResearches}
+          researchInvestments={researchInvestments}
           onChooseInnate={chooseInnate}
           onStartRun={startRun}
           onPrestige={prestige}
-          onBuyResearch={buyResearch}
+          onInvestResearch={investResearch}
         />
       )}
 

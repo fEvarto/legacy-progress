@@ -43,10 +43,14 @@ type SaveState = {
   bestMetaLevel: number
   metaPoints: number
   purchasedResearches: string[]
+  researchInvestments: Record<string, number>
+  availableInnateIds: string[]
   selectedInnateId: string | null
   runStarted: boolean
   tickRate: number
 }
+
+const rollInnates = () => [...innates].sort(() => Math.random() - 0.5).map((innate) => innate.id)
 
 const createInitialSave = (): SaveState => ({
   age: 18,
@@ -64,7 +68,9 @@ const createInitialSave = (): SaveState => ({
   bestMetaLevel: 1,
   metaPoints: 0,
   purchasedResearches: [],
-  selectedInnateId: innates[0].id,
+  researchInvestments: {},
+  availableInnateIds: [],
+  selectedInnateId: null,
   runStarted: true,
   tickRate: 60,
 })
@@ -92,7 +98,9 @@ const loadSave = (): SaveState => {
       bestMetaLevel: parsed.bestMetaLevel ?? 1,
       metaPoints: parsed.metaPoints ?? 0,
       purchasedResearches: parsed.purchasedResearches ?? [],
-      selectedInnateId: parsed.selectedInnateId ?? innates[0].id,
+      researchInvestments: parsed.researchInvestments ?? {},
+      availableInnateIds: parsed.availableInnateIds ?? [],
+      selectedInnateId: parsed.selectedInnateId ?? null,
       runStarted: parsed.runStarted ?? true,
       tickRate: parsed.tickRate ?? 60,
     }
@@ -118,6 +126,8 @@ export const useSimulation = () => {
   const [bestMetaLevel, setBestMetaLevel] = useState(persistedSave.bestMetaLevel)
   const [metaPoints, setMetaPoints] = useState(persistedSave.metaPoints)
   const [purchasedResearches, setPurchasedResearches] = useState(persistedSave.purchasedResearches)
+  const [researchInvestments, setResearchInvestments] = useState(persistedSave.researchInvestments)
+  const [availableInnateIds, setAvailableInnateIds] = useState(persistedSave.availableInnateIds)
   const [selectedInnateId, setSelectedInnateId] = useState<string | null>(persistedSave.selectedInnateId)
   const [runStarted, setRunStarted] = useState(persistedSave.runStarted)
   const [tickRate, setTickRate] = useState(persistedSave.tickRate)
@@ -127,52 +137,73 @@ export const useSimulation = () => {
   const currentJobProgress = jobProgress[selectedJobId] ?? { level: 1, xp: 0 }
   const currentHouse = housingOptions.find((house) => house.id === selectedHouseId) ?? housingOptions[0]
   const selectedInnate = innates.find((innate) => innate.id === selectedInnateId)
-  const researchBoost = (type: 'xp' | 'income' | 'skillXp') => purchasedResearches.reduce((sum, id) => {
+  const researchMultiplier = (type: 'xp' | 'income' | 'skillXp') => purchasedResearches.reduce((multiplier, id) => {
     const research = prestigeResearches.find((item) => item.id === id)
-    return sum + (research?.effect.type === type ? research.effect.value : 0)
-  }, 0)
+    return multiplier * (1 + (research?.effect.type === type ? research.effect.value : 0))
+  }, 1)
   const overallXpBoost = Math.pow(1.1, Math.max(0, bestMetaLevel - 1))
 
   const houseXpBoost = currentHouse.xpBoost
-  const potionIncomeBoost = activePotions.reduce((sum, potionState) => {
+  const potionIncomeMultiplier = activePotions.reduce((multiplier, potionState) => {
     const potion = shopPotions.find((item) => item.id === potionState.id)
-    return sum + (potion?.effect.type === 'income' ? potion.effect.value : 0)
-  }, 0)
-  const potionXpBoost = activePotions.reduce((sum, potionState) => {
+    return multiplier * (1 + (potion?.effect.type === 'income' ? potion.effect.value : 0))
+  }, 1)
+  const potionXpMultiplier = activePotions.reduce((multiplier, potionState) => {
     const potion = shopPotions.find((item) => item.id === potionState.id)
-    return sum + (potion?.effect.type === 'xp' ? potion.effect.value : 0)
-  }, 0)
-  const potionJobXpBoost = activePotions.reduce((sum, potionState) => {
+    return multiplier * (1 + (potion?.effect.type === 'xp' ? potion.effect.value : 0))
+  }, 1)
+  const potionJobXpMultiplier = activePotions.reduce((multiplier, potionState) => {
     const potion = shopPotions.find((item) => item.id === potionState.id)
-    return sum + (potion?.effect.type === 'jobXpRate' ? potion.effect.value : 0)
-  }, 0)
-  const accessoryIncomeBoost = ownedAccessories.reduce((sum, id) => {
+    return multiplier * (1 + (potion?.effect.type === 'jobXpRate' ? potion.effect.value : 0))
+  }, 1)
+  const accessoryIncomeMultiplier = ownedAccessories.reduce((multiplier, id) => {
     const accessory = accessories.find((item) => item.id === id)
-    return accessory && accessory.effect.type === 'wage' ? sum + accessory.effect.value : sum
-  }, 0)
-  const accessorySkillXpBoost = ownedAccessories.reduce((sum, id) => {
+    return multiplier * (1 + (accessory?.effect.type === 'wage' ? accessory.effect.value : 0))
+  }, 1)
+  const accessorySkillXpMultiplier = ownedAccessories.reduce((multiplier, id) => {
     const accessory = accessories.find((item) => item.id === id)
-    return accessory && accessory.effect.type === 'skillXp' ? sum + accessory.effect.value : sum
-  }, 0)
-  const accessoryJobXpBoost = ownedAccessories.reduce((sum, id) => {
+    return multiplier * (1 + (accessory?.effect.type === 'skillXp' ? accessory.effect.value : 0))
+  }, 1)
+  const accessoryJobXpMultiplier = ownedAccessories.reduce((multiplier, id) => {
     const accessory = accessories.find((item) => item.id === id)
-    return accessory && accessory.effect.type === 'jobXpRate' ? sum + accessory.effect.value : sum
-  }, 0)
+    return multiplier * (1 + (accessory?.effect.type === 'jobXpRate' ? accessory.effect.value : 0))
+  }, 1)
 
-  // Skill effects are level-based: level 1 is the baseline and every level after
-  // that adds the configured bonus. Shop and housing bonuses stack additively.
+  // Each multiplier source is applied independently. This prevents a bonus from
+  // becoming weaker as more sources are added and makes stacking predictable.
   const skillEffectPayMultiplier = skillEffectMultiplier(skills, 'jobPay')
   const skillEffectJobXpMultiplier = skillEffectMultiplier(skills, 'jobXp')
   const skillEffectSkillXpMultiplier = skillEffectMultiplier(skills, 'skillXp')
+  const innateIncomeMultiplier = 1 + (selectedInnate?.effect.type === 'income' ? selectedInnate.effect.value : 0)
+  const innateXpMultiplier = 1 + (selectedInnate?.effect.type === 'xp' ? selectedInnate.effect.value : 0)
+  const innateSkillXpMultiplier = 1 + (selectedInnate?.effect.type === 'skillXp' ? selectedInnate.effect.value : 0)
   const dailyIncome = Math.round(
     wageForJobLevel(currentJob, currentJobProgress.level) *
-      (1 + potionIncomeBoost + accessoryIncomeBoost + (selectedInnate?.effect.type === 'income' ? selectedInnate.effect.value : 0) + researchBoost('income')) *
+      potionIncomeMultiplier *
+      accessoryIncomeMultiplier *
+      innateIncomeMultiplier *
+      researchMultiplier('income') *
       skillEffectPayMultiplier,
   )
   const dailySpending = currentJob.upkeep + currentHouse.rent
-  const universalXpBoost = (selectedInnate?.effect.type === 'xp' ? selectedInnate.effect.value : 0) + researchBoost('xp')
-  const skillXpMultiplier = (1 + houseXpBoost + potionXpBoost + accessorySkillXpBoost + (selectedInnate?.effect.type === 'skillXp' ? selectedInnate.effect.value : 0) + researchBoost('skillXp') + universalXpBoost) * skillEffectSkillXpMultiplier * overallXpBoost
-  const jobXpMultiplier = (1 + houseXpBoost + potionJobXpBoost + accessoryJobXpBoost + universalXpBoost) * skillEffectJobXpMultiplier * overallXpBoost
+  const skillXpMultiplier =
+    (1 + houseXpBoost) *
+    potionXpMultiplier *
+    accessorySkillXpMultiplier *
+    innateSkillXpMultiplier *
+    researchMultiplier('skillXp') *
+    innateXpMultiplier *
+    researchMultiplier('xp') *
+    skillEffectSkillXpMultiplier *
+    overallXpBoost
+  const jobXpMultiplier =
+    (1 + houseXpBoost) *
+    potionJobXpMultiplier *
+    accessoryJobXpMultiplier *
+    innateXpMultiplier *
+    researchMultiplier('xp') *
+    skillEffectJobXpMultiplier *
+    overallXpBoost
   const netDaily = dailyIncome - dailySpending
   const requiredXp = requiredXpForLevel(currentJob, currentJobProgress.level)
   const jobXpPercent = Math.min(100, (currentJobProgress.xp / requiredXp) * 100)
@@ -212,13 +243,18 @@ export const useSimulation = () => {
       bestMetaLevel,
       metaPoints,
       purchasedResearches,
+      researchInvestments,
+      availableInnateIds,
       selectedInnateId,
       runStarted,
       tickRate,
     }
 
     window.localStorage.setItem(saveKey, JSON.stringify(saveData))
-  }, [age, money, selectedJobId, selectedHouseId, activePotions, potionCooldowns, ownedAccessories, skills, jobProgress, generation, metaLevel, runMetaXp, bestMetaLevel, metaPoints, purchasedResearches, selectedInnateId, runStarted, tickRate])
+  }, [age, money, selectedJobId, selectedHouseId, activePotions, potionCooldowns, ownedAccessories, skills, jobProgress, generation, metaLevel, runMetaXp, bestMetaLevel, metaPoints, purchasedResearches,
+  researchInvestments,
+  availableInnateIds,
+  selectedInnateId, runStarted, tickRate])
 
   useEffect(() => {
     const intervalMs = Math.max(1, Math.round(1000 / tickRate))
@@ -318,6 +354,8 @@ export const useSimulation = () => {
       bestMetaLevel,
       metaPoints,
       purchasedResearches,
+      researchInvestments,
+      availableInnateIds,
       selectedInnateId,
       runStarted,
       tickRate,
@@ -352,7 +390,9 @@ export const useSimulation = () => {
         bestMetaLevel: parsed.bestMetaLevel ?? 1,
         metaPoints: parsed.metaPoints ?? 0,
         purchasedResearches: parsed.purchasedResearches ?? [],
-        selectedInnateId: parsed.selectedInnateId ?? innates[0].id,
+        researchInvestments: parsed.researchInvestments ?? {},
+        availableInnateIds: parsed.availableInnateIds ?? [],
+        selectedInnateId: parsed.selectedInnateId ?? null,
         runStarted: parsed.runStarted ?? true,
         tickRate: parsed.tickRate ?? 60,
       }
@@ -372,6 +412,8 @@ export const useSimulation = () => {
       setBestMetaLevel(nextSave.bestMetaLevel)
       setMetaPoints(nextSave.metaPoints)
       setPurchasedResearches(nextSave.purchasedResearches)
+      setResearchInvestments(nextSave.researchInvestments)
+      setAvailableInnateIds(nextSave.availableInnateIds)
       setSelectedInnateId(nextSave.selectedInnateId)
       setRunStarted(nextSave.runStarted)
       setTickRate(nextSave.tickRate)
@@ -382,16 +424,17 @@ export const useSimulation = () => {
   }
 
   const chooseInnate = (innate: Innate) => {
-    if (!runStarted) setSelectedInnateId(innate.id)
+    if (!runStarted && availableInnateIds.includes(innate.id)) setSelectedInnateId(innate.id)
   }
 
   const startRun = () => {
-    if (selectedInnateId) setRunStarted(true)
+    if (selectedInnateId && availableInnateIds.includes(selectedInnateId)) setRunStarted(true)
   }
 
   const prestige = () => {
-    if (!runStarted || runMetaXp <= 1) return
-    setMetaPoints((prev) => roundTo(prev + runMetaXp, 2))
+    const prestigeAge = lifespanYears * 0.9
+    if (!runStarted || age < prestigeAge || runMetaXp <= 1) return
+    setMetaPoints((prev) => prev + Math.ceil(runMetaXp))
     setBestMetaLevel((prev) => Math.max(prev, metaLevel.level))
     setAge(18)
     setMoney(140)
@@ -405,15 +448,26 @@ export const useSimulation = () => {
     setGeneration((prev) => prev + 1)
     setMetaLevel(metaLevelFromXp(1))
     setRunMetaXp(1)
+    setAvailableInnateIds(rollInnates())
     setSelectedInnateId(null)
     setRunStarted(false)
   }
 
-  const buyResearch = (researchId: string) => {
+  const investResearch = (researchId: string) => {
     const research = prestigeResearches.find((item) => item.id === researchId)
-    if (!research || purchasedResearches.includes(researchId) || research.cost > metaPoints) return
-    setMetaPoints((prev) => prev - research.cost)
-    setPurchasedResearches((prev) => [...prev, researchId])
+    if (!research || purchasedResearches.includes(researchId)) return
+
+    setMetaPoints((prevPoints) => {
+      if (prevPoints <= 0) return prevPoints
+      const invested = Math.min(0.1, prevPoints, research.cost - (researchInvestments[researchId] ?? 0))
+      if (invested <= 0) return prevPoints
+      setResearchInvestments((previous) => {
+        const total = (previous[researchId] ?? 0) + invested
+        if (total >= research.cost) setPurchasedResearches((owned) => [...owned, researchId])
+        return { ...previous, [researchId]: Math.min(research.cost, total) }
+      })
+      return roundTo(prevPoints - invested, 2)
+    })
   }
 
   const resetProgress = () => {
@@ -433,6 +487,8 @@ export const useSimulation = () => {
     setBestMetaLevel(resetSave.bestMetaLevel)
     setMetaPoints(resetSave.metaPoints)
     setPurchasedResearches(resetSave.purchasedResearches)
+    setResearchInvestments(resetSave.researchInvestments)
+    setAvailableInnateIds(resetSave.availableInnateIds)
     setSelectedInnateId(resetSave.selectedInnateId)
     setRunStarted(resetSave.runStarted)
     setTickRate(resetSave.tickRate)
@@ -455,6 +511,8 @@ export const useSimulation = () => {
     bestMetaLevel,
     metaPoints,
     purchasedResearches,
+    researchInvestments,
+    availableInnateIds,
     selectedInnateId,
     runStarted,
     tickRate,
@@ -484,6 +542,6 @@ export const useSimulation = () => {
     chooseInnate,
     startRun,
     prestige,
-    buyResearch,
+    investResearch,
   }
 }

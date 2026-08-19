@@ -75,17 +75,8 @@ export const SettingsTab = ({ tickRate, onSelectTickRate, onExportSave, onImport
           <span>Follow the project</span>
         </div>
         <div className="social-links">
-          <a href="https://github.com/" target="_blank" rel="noreferrer">
+          <a href="https://github.com/fevarto/legacy-progress" target="_blank" rel="noreferrer">
             GitHub
-          </a>
-          <a href="https://x.com/" target="_blank" rel="noreferrer">
-            X
-          </a>
-          <a href="https://discord.com/" target="_blank" rel="noreferrer">
-            Discord
-          </a>
-          <a href="https://discord.com/" target="_blank" rel="noreferrer">
-            Patch Notes
           </a>
         </div>
       </section>
