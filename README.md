@@ -20,7 +20,7 @@ Prestige is intentionally restricted until the hero reaches 90% of the configure
 
 ## Technology
 
-- [React](https://react.dev/) 19
+- [React 19](https://react.dev/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [Vite](https://vite.dev/)
 - CSS with a component-oriented React structure
@@ -61,14 +61,6 @@ src/
 ├── App.tsx            Application composition and tab navigation
 └── main.tsx           React application entry point
 ```
-
-## Persistence and data
-
-The application stores the active game state in the browser's `localStorage`. The Settings tab provides controls to export a serialized save and import it later. Clearing site data or using the reset action permanently removes the local progress for that browser profile.
-
-## Contributing
-
-Contributions are welcome. For substantial changes, open an issue first to discuss the proposed gameplay or technical change. Keep changes focused, run `npm run lint` and `npm run build`, and update documentation when behavior changes.
 
 ## License
 
