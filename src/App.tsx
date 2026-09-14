@@ -35,6 +35,8 @@ function App() {
     currentHouse,
     dailyIncome,
     dailySpending,
+    jobUpkeepDaily,
+    housingRentDaily,
     netDaily,
     skillXpMultiplier,
     tabs,
@@ -62,6 +64,8 @@ function App() {
         money={money}
         dailyIncome={dailyIncome}
         dailySpending={dailySpending}
+        jobUpkeepDaily={jobUpkeepDaily}
+        housingRentDaily={housingRentDaily}
         netDaily={netDaily}
         generation={generation}
         metaLevel={metaLevel}
@@ -71,7 +75,7 @@ function App() {
         currentHouse={currentHouse}
         activePotions={activePotions}
         ownedAccessories={ownedAccessories}
-        innateTitle={innates.find((innate) => innate.id === selectedInnateId)?.title}
+        innate={innates.find((innate) => innate.id === selectedInnateId)}
       />
 
       <nav className="tab-bar" aria-label="Simulation sections">

@@ -1,6 +1,6 @@
 export type SkillId = 'physical' | 'social' | 'craft' | 'knowledge' | 'creativity' | 'survival'
 export type SkillCategory = 'Body' | 'Mind' | 'Society'
-export type SkillEffectType = 'jobXp' | 'jobPay' | 'skillXp'
+export type SkillEffectType = 'jobXp' | 'jobPay' | 'skillXp' | 'jobUpkeep' | 'housingRent'
 export type TabId = 'overview' | 'skills' | 'economy' | 'shop' | 'prestige' | 'settings'
 
 export type Innate = {

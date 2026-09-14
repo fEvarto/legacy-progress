@@ -20,6 +20,7 @@ import {
   requiredXpForLevel,
   roundTo,
   skillEffectMultiplier,
+  skillCostMultiplier,
   wageForJobLevel,
 } from '../utils'
 
@@ -174,6 +175,8 @@ export const useSimulation = () => {
   const skillEffectPayMultiplier = skillEffectMultiplier(skills, 'jobPay')
   const skillEffectJobXpMultiplier = skillEffectMultiplier(skills, 'jobXp')
   const skillEffectSkillXpMultiplier = skillEffectMultiplier(skills, 'skillXp')
+  const skillEffectJobUpkeepMultiplier = skillCostMultiplier(skills, 'jobUpkeep')
+  const skillEffectHousingRentMultiplier = skillCostMultiplier(skills, 'housingRent')
   const innateIncomeMultiplier = 1 + (selectedInnate?.effect.type === 'income' ? selectedInnate.effect.value : 0)
   const innateXpMultiplier = 1 + (selectedInnate?.effect.type === 'xp' ? selectedInnate.effect.value : 0)
   const innateSkillXpMultiplier = 1 + (selectedInnate?.effect.type === 'skillXp' ? selectedInnate.effect.value : 0)
@@ -185,7 +188,9 @@ export const useSimulation = () => {
       researchMultiplier('income') *
       skillEffectPayMultiplier,
   )
-  const dailySpending = currentJob.upkeep + currentHouse.rent
+  const jobUpkeepDaily = roundTo(currentJob.upkeep * skillEffectJobUpkeepMultiplier)
+  const housingRentDaily = roundTo(currentHouse.rent * skillEffectHousingRentMultiplier)
+  const dailySpending = roundTo(jobUpkeepDaily + housingRentDaily)
   const skillXpMultiplier =
     (1 + houseXpBoost) *
     potionXpMultiplier *
@@ -204,7 +209,7 @@ export const useSimulation = () => {
     researchMultiplier('xp') *
     skillEffectJobXpMultiplier *
     overallXpBoost
-  const netDaily = dailyIncome - dailySpending
+  const netDaily = roundTo(dailyIncome - dailySpending)
   const requiredXp = requiredXpForLevel(currentJob, currentJobProgress.level)
   const jobXpPercent = Math.min(100, (currentJobProgress.xp / requiredXp) * 100)
   const tabs: Array<{ id: TabId; label: string }> = [
@@ -446,8 +451,8 @@ export const useSimulation = () => {
     setSkills(initialSkills)
     setJobProgress(initialJobProgress)
     setGeneration((prev) => prev + 1)
-    setMetaLevel(metaLevelFromXp(1))
-    setRunMetaXp(1)
+    // Meta XP is permanent progression; only run-specific skills reset here.
+    setMetaLevel(metaLevelFromXp(runMetaXp))
     setAvailableInnateIds(rollInnates())
     setSelectedInnateId(null)
     setRunStarted(false)
@@ -522,6 +527,8 @@ export const useSimulation = () => {
     currentHouse,
     dailyIncome,
     dailySpending,
+    jobUpkeepDaily,
+    housingRentDaily,
     netDaily,
     skillXpMultiplier,
     jobXpMultiplier,

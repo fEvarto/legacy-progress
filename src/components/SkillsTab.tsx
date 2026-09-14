@@ -50,8 +50,17 @@ export const SkillsTab = ({ skills, currentJob, skillXpMultiplier }: SkillsTabPr
                                       const effects = unlocked ? Object.entries(skillMeta[key].effects ?? {})
                                         .map(([effect, value]) => {
                                           const currentBonus = Math.max(0, skill.level - 1) * value
-                                          const label = effect === 'jobXp' ? 'Job XP' : effect === 'jobPay' ? 'Job pay' : 'Skill XP'
-                                                                                    return `${label} +${(currentBonus * 100).toFixed(1)}%`
+                                                                                    const label = effect === 'jobXp'
+                                            ? 'Job XP'
+                                            : effect === 'jobPay'
+                                              ? 'Job pay'
+                                              : effect === 'skillXp'
+                                                ? 'Skill XP'
+                                                : effect === 'jobUpkeep'
+                                                  ? 'Job upkeep'
+                                                  : 'Housing rent'
+                                          const sign = effect === 'jobUpkeep' || effect === 'housingRent' ? '-' : '+'
+                                          return `${label} ${sign}${(currentBonus * 100).toFixed(1)}%`
                                         }) : []
 
                     return (
