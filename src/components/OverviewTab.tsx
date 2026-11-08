@@ -20,10 +20,6 @@ export const OverviewTab = ({ jobs, jobProgress, skills, selectedJobId, onSelect
 
   return (
     <>
-      <div className="panel-header overview-caption">
-          <h2>Choose a livelihood</h2>
-        <span>Click a row to select the job</span>
-        </div>
       <div className="table-group-grid">
         {Object.entries(groupedJobs).map(([category, categoryJobs]) => (
           <section key={category} className="panel">

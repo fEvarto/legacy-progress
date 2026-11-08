@@ -221,12 +221,10 @@ export const useSimulation = () => {
   ]
 
   useEffect(() => {
+    const nextXp = Math.max(runMetaXp, averageSkillLevel(skills))
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMetaLevel(() => {
-      const nextXp = Math.max(runMetaXp, averageSkillLevel(skills))
-      setRunMetaXp(nextXp)
-      return metaLevelFromXp(nextXp)
-    })
+    setRunMetaXp(nextXp)
+    setMetaLevel(metaLevelFromXp(nextXp))
   }, [skills, runMetaXp])
 
   useEffect(() => {
@@ -448,11 +446,13 @@ export const useSimulation = () => {
     setActivePotions([])
     setPotionCooldowns([])
     setOwnedAccessories([])
-    setSkills(initialSkills)
+    setSkills({ ...initialSkills })
     setJobProgress(initialJobProgress)
     setGeneration((prev) => prev + 1)
-    // Meta XP is permanent progression; only run-specific skills reset here.
-    setMetaLevel(metaLevelFromXp(runMetaXp))
+    // Run meta XP and the run meta level reset; only the best meta level persists.
+    const startingMetaXp = averageSkillLevel(initialSkills)
+    setRunMetaXp(startingMetaXp)
+    setMetaLevel(metaLevelFromXp(startingMetaXp))
     setAvailableInnateIds(rollInnates())
     setSelectedInnateId(null)
     setRunStarted(false)

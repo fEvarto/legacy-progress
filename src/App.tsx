@@ -1,5 +1,7 @@
 import './App.css'
+import { useEffect, useRef } from 'react'
 import { HeroPanel } from './components/HeroPanel'
+import { MetaBar } from './components/MetaBar'
 import { OverviewTab } from './components/OverviewTab'
 import { SettingsTab } from './components/SettingsTab'
 import { ShopTab } from './components/ShopTab'
@@ -56,100 +58,116 @@ function App() {
     potionCooldowns,
   } = useSimulation()
 
+  const contentRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    contentRef.current?.scrollTo({ top: 0 })
+  }, [activeTab])
+
   return (
     <main className="sim-shell">
-      <HeroPanel
-        age={age}
-        lifespanYears={lifespanYears}
-        money={money}
-        dailyIncome={dailyIncome}
-        dailySpending={dailySpending}
-        jobUpkeepDaily={jobUpkeepDaily}
-        housingRentDaily={housingRentDaily}
-        netDaily={netDaily}
-        generation={generation}
-        metaLevel={metaLevel}
-        currentJob={currentJob}
-        skills={skills}
-        jobProgress={jobProgress}
-        currentHouse={currentHouse}
-        activePotions={activePotions}
-        ownedAccessories={ownedAccessories}
-        innate={innates.find((innate) => innate.id === selectedInnateId)}
-      />
+      <MetaBar metaLevel={metaLevel} />
 
-      <nav className="tab-bar" aria-label="Simulation sections">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </nav>
+      <div className="game-layout">
+        <aside className="side-bar">
+          <div className="side-scroll">
+            <HeroPanel
+              age={age}
+              lifespanYears={lifespanYears}
+              money={money}
+              dailyIncome={dailyIncome}
+              dailySpending={dailySpending}
+              jobUpkeepDaily={jobUpkeepDaily}
+              housingRentDaily={housingRentDaily}
+              netDaily={netDaily}
+              generation={generation}
+              metaLevel={metaLevel}
+              currentJob={currentJob}
+              skills={skills}
+              jobProgress={jobProgress}
+              currentHouse={currentHouse}
+              activePotions={activePotions}
+              ownedAccessories={ownedAccessories}
+              innate={innates.find((innate) => innate.id === selectedInnateId)}
+            />
+          </div>
+        </aside>
 
-      {activeTab === 'overview' && (
-        <OverviewTab
-          jobs={jobs}
-          jobProgress={jobProgress}
-          skills={skills}
-          selectedJobId={selectedJobId}
-          onSelectJob={selectJob}
-        />
-      )}
+        <section className="content-area" ref={contentRef}>
+          <nav className="tab-bar" aria-label="Simulation sections">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
 
-      {activeTab === 'skills' && (
-        <SkillsTab skills={skills} currentJob={currentJob} skillXpMultiplier={skillXpMultiplier} />
-      )}
+          {activeTab === 'overview' && (
+            <OverviewTab
+              jobs={jobs}
+              jobProgress={jobProgress}
+              skills={skills}
+              selectedJobId={selectedJobId}
+              onSelectJob={selectJob}
+            />
+          )}
 
-      {activeTab === 'shop' && (
-        <ShopTab
-          housingOptions={housingOptions}
-          shopPotions={shopPotions}
-          accessories={accessories}
-          selectedHouseId={selectedHouseId}
-          potionCooldowns={potionCooldowns}
-          ownedAccessories={ownedAccessories}
-          onBuyHouse={buyHouse}
-          onBuyPotion={buyPotion}
-          onBuyAccessory={buyAccessory}
-        />
-      )}
+          {activeTab === 'skills' && (
+            <SkillsTab skills={skills} currentJob={currentJob} skillXpMultiplier={skillXpMultiplier} />
+          )}
 
-      {activeTab === 'prestige' && (
-        <PrestigeTab
-          innates={innates}
-          researches={prestigeResearches}
-          availableInnateIds={availableInnateIds}
-          selectedInnateId={selectedInnateId}
-          runStarted={runStarted}
-          age={age}
-          lifespanYears={lifespanYears}
-          runMetaXp={runMetaXp}
-          metaLevel={metaLevel.level}
-          bestMetaLevel={bestMetaLevel}
-          metaPoints={metaPoints}
-          purchasedResearches={purchasedResearches}
-          researchInvestments={researchInvestments}
-          onChooseInnate={chooseInnate}
-          onStartRun={startRun}
-          onPrestige={prestige}
-          onInvestResearch={investResearch}
-        />
-      )}
+          {activeTab === 'shop' && (
+            <ShopTab
+              housingOptions={housingOptions}
+              shopPotions={shopPotions}
+              accessories={accessories}
+              selectedHouseId={selectedHouseId}
+              potionCooldowns={potionCooldowns}
+              ownedAccessories={ownedAccessories}
+              onBuyHouse={buyHouse}
+              onBuyPotion={buyPotion}
+              onBuyAccessory={buyAccessory}
+            />
+          )}
 
-      {activeTab === 'settings' && (
-        <SettingsTab
-          tickRate={tickRate}
-          onSelectTickRate={setTickRate}
-          onExportSave={exportSave}
-          onImportSave={importSave}
-          onResetProgress={resetProgress}
-        />
-      )}
+          {activeTab === 'prestige' && (
+            <PrestigeTab
+              innates={innates}
+              researches={prestigeResearches}
+              availableInnateIds={availableInnateIds}
+              selectedInnateId={selectedInnateId}
+              runStarted={runStarted}
+              age={age}
+              lifespanYears={lifespanYears}
+              runMetaXp={runMetaXp}
+              metaLevel={metaLevel.level}
+              bestMetaLevel={bestMetaLevel}
+              metaPoints={metaPoints}
+              purchasedResearches={purchasedResearches}
+              researchInvestments={researchInvestments}
+              onChooseInnate={chooseInnate}
+              onStartRun={startRun}
+              onPrestige={prestige}
+              onInvestResearch={investResearch}
+            />
+          )}
+
+          {activeTab === 'settings' && (
+            <SettingsTab
+              tickRate={tickRate}
+              onSelectTickRate={setTickRate}
+              onExportSave={exportSave}
+              onImportSave={importSave}
+              onResetProgress={resetProgress}
+            />
+          )}
+        </section>
+      </div>
     </main>
   )
 }
