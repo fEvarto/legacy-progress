@@ -1,5 +1,52 @@
-import type { Skills, Job, JobProgressState, MetaLevel, SkillEffectType } from './types'
+import type { HappinessBreakdown, Skills, Job, JobProgressState, MetaLevel, SkillEffectType } from './types'
 import { skillMeta } from './data'
+
+/** Clamp a numeric value between a minimum and maximum (inclusive). */
+export const clamp = (value: number, min: number, max: number): number =>
+  Math.min(max, Math.max(min, value))
+
+/** Happiness lost to age: grows linearly from 0 to the configured maximum across a lifespan. */
+export const happinessAgePenalty = (age: number, lifespanYears: number, maxPenalty: number): number =>
+  clamp((age / lifespanYears) * maxPenalty, 0, maxPenalty)
+
+/** A happiness score of 100 gives ×2.0 skill XP, 50 gives ×1.0 and 0 gives ×0.5. */
+export const happinessMultiplierFor = (happiness: number, maxHappiness: number = 100): number =>
+  0.5 + clamp(happiness, 0, maxHappiness) / 100
+
+type HappinessInput = {
+  age: number
+  lifespanYears: number
+  base: number
+  max: number
+  agePenaltyMax: number
+  housingBoost: number
+  innateBonus: number
+  accessoryBonus: number
+}
+
+/** Combine every happiness source, including the age penalty, into a clamped breakdown. */
+export const calculateHappiness = ({
+  age,
+  lifespanYears,
+  base,
+  max,
+  agePenaltyMax,
+  housingBoost,
+  innateBonus,
+  accessoryBonus,
+}: HappinessInput): HappinessBreakdown => {
+  const agePenalty = happinessAgePenalty(age, lifespanYears, agePenaltyMax)
+  const total = clamp(base + housingBoost + innateBonus + accessoryBonus - agePenalty, 0, max)
+
+  return {
+    base,
+    agePenalty: roundTo(agePenalty, 1),
+    housing: housingBoost,
+    innate: innateBonus,
+    accessories: roundTo(accessoryBonus, 1),
+    total: roundTo(total, 1),
+  }
+}
 
 /** Round a number to a given number of decimal places, avoiding floating-point drift */
 export const roundTo = (value: number, decimals: number = 2): number => {

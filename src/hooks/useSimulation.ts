@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import type {
   Accessory,
+  AccessoryBoostState,
   Housing,
   MetaLevel,
   Potion,
@@ -11,10 +12,27 @@ import type {
   JobProgressState,
   Innate,
 } from '../types'
-import { accessories, housingOptions, initialJobProgress, initialSkills, jobs, shopPotions, innates, prestigeResearches } from '../data'
+import {
+  accessories,
+  accessoryHappinessBoost,
+  accessoryHappinessDurationDays,
+  happinessAgePenaltyMax,
+  happinessBase,
+  happinessMax,
+  housingOptions,
+  initialJobProgress,
+  initialSkills,
+  jobs,
+  shopPotions,
+  innates,
+  prestigeResearches,
+} from '../data'
+import { generateHeroName } from '../heroNames'
 import {
   averageSkillLevel,
+  calculateHappiness,
   gainExperience,
+  happinessMultiplierFor,
   isJobUnlocked,
   metaLevelFromXp,
   requiredXpForLevel,
@@ -29,6 +47,7 @@ const lifespanYears = 35
 const saveKey = 'legacy-progress-save'
 
 type SaveState = {
+  heroName: string
   age: number
   money: number
   selectedJobId: string
@@ -36,6 +55,7 @@ type SaveState = {
   activePotions: PotionState[]
   potionCooldowns: PotionCooldown[]
   ownedAccessories: string[]
+  accessoryBoosts: AccessoryBoostState[]
   skills: Skills
   jobProgress: JobProgressState
   generation: number
@@ -54,6 +74,7 @@ type SaveState = {
 const rollInnates = () => [...innates].sort(() => Math.random() - 0.5).map((innate) => innate.id)
 
 const createInitialSave = (): SaveState => ({
+  heroName: generateHeroName(),
   age: 18,
   money: 140,
   selectedJobId: jobs[0].id,
@@ -61,6 +82,7 @@ const createInitialSave = (): SaveState => ({
   activePotions: [],
   potionCooldowns: [],
   ownedAccessories: [],
+  accessoryBoosts: [],
   skills: initialSkills,
   jobProgress: initialJobProgress,
   generation: 1,
@@ -87,11 +109,13 @@ const loadSave = (): SaveState => {
     return {
       ...createInitialSave(),
       ...parsed,
+      heroName: parsed.heroName ?? generateHeroName(),
       selectedJobId: parsed.selectedJobId ?? jobs[0].id,
       selectedHouseId: parsed.selectedHouseId ?? housingOptions[0].id,
       activePotions: parsed.activePotions ?? [],
       potionCooldowns: parsed.potionCooldowns ?? [],
       ownedAccessories: parsed.ownedAccessories ?? [],
+      accessoryBoosts: parsed.accessoryBoosts ?? [],
       skills: parsed.skills ?? initialSkills,
       jobProgress: parsed.jobProgress ?? initialJobProgress,
       metaLevel: parsed.metaLevel ?? metaLevelFromXp(averageSkillLevel(parsed.skills ?? initialSkills)),
@@ -112,6 +136,7 @@ const loadSave = (): SaveState => {
 
 export const useSimulation = () => {
   const persistedSave = loadSave()
+  const [heroName, setHeroName] = useState(persistedSave.heroName)
   const [age, setAge] = useState(persistedSave.age)
   const [money, setMoney] = useState(persistedSave.money)
   const [selectedJobId, setSelectedJobId] = useState(persistedSave.selectedJobId)
@@ -119,6 +144,7 @@ export const useSimulation = () => {
   const [activePotions, setActivePotions] = useState<PotionState[]>(persistedSave.activePotions)
   const [potionCooldowns, setPotionCooldowns] = useState<PotionCooldown[]>(persistedSave.potionCooldowns)
   const [ownedAccessories, setOwnedAccessories] = useState<string[]>(persistedSave.ownedAccessories)
+  const [accessoryBoosts, setAccessoryBoosts] = useState<AccessoryBoostState[]>(persistedSave.accessoryBoosts)
   const [skills, setSkills] = useState<Skills>(persistedSave.skills)
   const [jobProgress, setJobProgress] = useState<JobProgressState>(persistedSave.jobProgress)
   const [generation, setGeneration] = useState(persistedSave.generation)
@@ -144,7 +170,26 @@ export const useSimulation = () => {
   }, 1)
   const overallXpBoost = Math.pow(1.1, Math.max(0, bestMetaLevel - 1))
 
-  const houseXpBoost = currentHouse.xpBoost
+  const innateHappinessBonus = selectedInnate?.effect.type === 'happiness' ? selectedInnate.effect.value : 0
+  /** Accessory boosts decay linearly: each one contributes boost × (daysLeft / totalDays). */
+  const accessoryHappinessBonus = accessoryBoosts.reduce(
+    (sum, boost) =>
+      sum + (boost.totalDays > 0 ? boost.boost * Math.min(1, Math.max(0, boost.daysLeft / boost.totalDays)) : 0),
+    0,
+  )
+  const happinessBreakdown = calculateHappiness({
+    age,
+    lifespanYears,
+    base: happinessBase,
+    max: happinessMax,
+    agePenaltyMax: happinessAgePenaltyMax,
+    housingBoost: currentHouse.happinessBoost,
+    innateBonus: innateHappinessBonus,
+    accessoryBonus: accessoryHappinessBonus,
+  })
+  const happiness = happinessBreakdown.total
+  const happinessMultiplier = happinessMultiplierFor(happiness, happinessMax)
+
   const potionIncomeMultiplier = activePotions.reduce((multiplier, potionState) => {
     const potion = shopPotions.find((item) => item.id === potionState.id)
     return multiplier * (1 + (potion?.effect.type === 'income' ? potion.effect.value : 0))
@@ -192,7 +237,7 @@ export const useSimulation = () => {
   const housingRentDaily = roundTo(currentHouse.rent * skillEffectHousingRentMultiplier)
   const dailySpending = roundTo(jobUpkeepDaily + housingRentDaily)
   const skillXpMultiplier =
-    (1 + houseXpBoost) *
+    happinessMultiplier *
     potionXpMultiplier *
     accessorySkillXpMultiplier *
     innateSkillXpMultiplier *
@@ -202,7 +247,6 @@ export const useSimulation = () => {
     skillEffectSkillXpMultiplier *
     overallXpBoost
   const jobXpMultiplier =
-    (1 + houseXpBoost) *
     potionJobXpMultiplier *
     accessoryJobXpMultiplier *
     innateXpMultiplier *
@@ -231,6 +275,7 @@ export const useSimulation = () => {
     if (typeof window === 'undefined') return
 
     const saveData: SaveState = {
+      heroName,
       age,
       money,
       selectedJobId,
@@ -238,6 +283,7 @@ export const useSimulation = () => {
       activePotions,
       potionCooldowns,
       ownedAccessories,
+      accessoryBoosts,
       skills,
       jobProgress,
       generation,
@@ -254,7 +300,7 @@ export const useSimulation = () => {
     }
 
     window.localStorage.setItem(saveKey, JSON.stringify(saveData))
-  }, [age, money, selectedJobId, selectedHouseId, activePotions, potionCooldowns, ownedAccessories, skills, jobProgress, generation, metaLevel, runMetaXp, bestMetaLevel, metaPoints, purchasedResearches,
+  }, [heroName, age, money, selectedJobId, selectedHouseId, activePotions, potionCooldowns, ownedAccessories, accessoryBoosts, skills, jobProgress, generation, metaLevel, runMetaXp, bestMetaLevel, metaPoints, purchasedResearches,
   researchInvestments,
   availableInnateIds,
   selectedInnateId, runStarted, tickRate])
@@ -295,6 +341,14 @@ export const useSimulation = () => {
           .map((cooldown) => ({ ...cooldown, daysLeft: Math.max(0, cooldown.daysLeft - tickAmount) }))
           .filter((cooldown) => cooldown.daysLeft > 0),
       )
+
+      setAccessoryBoosts((prev) =>
+        prev.length === 0
+          ? prev
+          : prev
+              .map((boost) => ({ ...boost, daysLeft: Math.max(0, boost.daysLeft - tickAmount) }))
+              .filter((boost) => boost.daysLeft > 0),
+      )
     }, intervalMs)
 
     return () => window.clearInterval(interval)
@@ -307,6 +361,7 @@ export const useSimulation = () => {
         setActivePotions([])
         setPotionCooldowns([])
         setOwnedAccessories([])
+        setAccessoryBoosts([])
       }, 0)
     }
   }, [money])
@@ -338,10 +393,20 @@ export const useSimulation = () => {
     if (accessory.cost > money || ownedAccessories.includes(accessory.id)) return
     setMoney((prev) => prev - accessory.cost)
     setOwnedAccessories((prev) => [...prev, accessory.id])
+    setAccessoryBoosts((prev) => [
+      ...prev,
+      {
+        id: accessory.id,
+        daysLeft: accessoryHappinessDurationDays,
+        totalDays: accessoryHappinessDurationDays,
+        boost: accessoryHappinessBoost,
+      },
+    ])
   }
 
   const exportSave = () => {
     const saveData: SaveState = {
+      heroName,
       age,
       money,
       selectedJobId,
@@ -349,6 +414,7 @@ export const useSimulation = () => {
       activePotions,
       potionCooldowns,
       ownedAccessories,
+      accessoryBoosts,
       skills,
       jobProgress,
       generation,
@@ -381,11 +447,13 @@ export const useSimulation = () => {
       const nextSave: SaveState = {
         ...createInitialSave(),
         ...parsed,
+        heroName: parsed.heroName ?? generateHeroName(),
         selectedJobId: parsed.selectedJobId ?? jobs[0].id,
         selectedHouseId: parsed.selectedHouseId ?? housingOptions[0].id,
         activePotions: parsed.activePotions ?? [],
         potionCooldowns: parsed.potionCooldowns ?? [],
         ownedAccessories: parsed.ownedAccessories ?? [],
+        accessoryBoosts: parsed.accessoryBoosts ?? [],
         skills: parsed.skills ?? initialSkills,
         jobProgress: parsed.jobProgress ?? initialJobProgress,
         metaLevel: parsed.metaLevel ?? metaLevelFromXp(averageSkillLevel(parsed.skills ?? initialSkills)),
@@ -400,6 +468,7 @@ export const useSimulation = () => {
         tickRate: parsed.tickRate ?? 60,
       }
 
+      setHeroName(nextSave.heroName)
       setAge(nextSave.age)
       setMoney(nextSave.money)
       setSelectedJobId(nextSave.selectedJobId)
@@ -407,6 +476,7 @@ export const useSimulation = () => {
       setActivePotions(nextSave.activePotions)
       setPotionCooldowns(nextSave.potionCooldowns)
       setOwnedAccessories(nextSave.ownedAccessories)
+      setAccessoryBoosts(nextSave.accessoryBoosts)
       setSkills(nextSave.skills)
       setJobProgress(nextSave.jobProgress)
       setGeneration(nextSave.generation)
@@ -439,6 +509,7 @@ export const useSimulation = () => {
     if (!runStarted || age < prestigeAge || runMetaXp <= 1) return
     setMetaPoints((prev) => prev + Math.ceil(runMetaXp))
     setBestMetaLevel((prev) => Math.max(prev, metaLevel.level))
+    setHeroName(generateHeroName())
     setAge(18)
     setMoney(140)
     setSelectedJobId(jobs[0].id)
@@ -446,6 +517,7 @@ export const useSimulation = () => {
     setActivePotions([])
     setPotionCooldowns([])
     setOwnedAccessories([])
+    setAccessoryBoosts([])
     setSkills({ ...initialSkills })
     setJobProgress(initialJobProgress)
     setGeneration((prev) => prev + 1)
@@ -477,6 +549,7 @@ export const useSimulation = () => {
 
   const resetProgress = () => {
     const resetSave = createInitialSave()
+    setHeroName(resetSave.heroName)
     setAge(resetSave.age)
     setMoney(resetSave.money)
     setSelectedJobId(resetSave.selectedJobId)
@@ -484,6 +557,7 @@ export const useSimulation = () => {
     setActivePotions(resetSave.activePotions)
     setPotionCooldowns(resetSave.potionCooldowns)
     setOwnedAccessories(resetSave.ownedAccessories)
+    setAccessoryBoosts(resetSave.accessoryBoosts)
     setSkills(resetSave.skills)
     setJobProgress(resetSave.jobProgress)
     setGeneration(resetSave.generation)
@@ -500,6 +574,7 @@ export const useSimulation = () => {
   }
 
   return {
+    heroName,
     age,
     lifespanYears,
     money,
@@ -508,6 +583,7 @@ export const useSimulation = () => {
     activePotions,
     potionCooldowns,
     ownedAccessories,
+    accessoryBoosts,
     skills,
     jobProgress,
     generation,
@@ -532,6 +608,9 @@ export const useSimulation = () => {
     netDaily,
     skillXpMultiplier,
     jobXpMultiplier,
+    happiness,
+    happinessMultiplier,
+    happinessBreakdown,
     requiredXp,
     jobXpPercent,
     tabs,

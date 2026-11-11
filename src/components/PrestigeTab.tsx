@@ -36,13 +36,13 @@ export const PrestigeTab = ({ innates, researches, availableInnateIds, selectedI
   return (
   <div className="prestige-grid">
     <section className="panel">
-      <div className="panel-header"><h2>Prestige</h2><span>End this life and carry your knowledge forward</span></div>
+      <div className="panel-header"><h2>Prestige</h2></div>
       <div className="prestige-summary">
         <strong>{Math.ceil(metaPoints)} meta points</strong>
         <span>Run meta XP: {runMetaXp.toFixed(2)} · Current meta level: {metaLevel} · Best level: {bestMetaLevel}</span>
         <span>Best level boost: ×{Math.pow(1.1, Math.max(0, bestMetaLevel - 1)).toFixed(2)} overall XP</span>
       </div>
-      <p className="muted">Prestige grants rounded-up meta points. It becomes available at age {prestigeAge.toFixed(1)}, or 90% of the lifespan.</p>
+      <p className="muted">Prestige grants rounded-up meta points. It becomes available at age {prestigeAge.toFixed(1)}, around 90% of the lifespan.</p>
       <button type="button" className="action-button danger" disabled={!runStarted || age < prestigeAge || runMetaXp <= 1} onClick={onPrestige}>{age < prestigeAge ? `Prestige unlocks at ${prestigeAge.toFixed(1)}` : `Prestige for ${Math.ceil(runMetaXp)} points`}</button>
     </section>
     <section className="panel">

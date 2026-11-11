@@ -7,7 +7,8 @@ export type Innate = {
   id: string
   title: string
   description: string
-  effect: { type: 'xp' | 'income' | 'skillXp'; value: number }
+  // Fractional bonuses for xp/income/skillXp; happiness effects are flat points (0-100 scale).
+  effect: { type: 'xp' | 'income' | 'skillXp' | 'happiness'; value: number }
 }
 
 export type PrestigeResearch = {
@@ -64,7 +65,7 @@ export type Housing = {
   id: string
   title: string
   description: string
-  xpBoost: number
+  happinessBoost: number
   rent: number // daily money drain while living here
 }
 
@@ -94,6 +95,22 @@ export type PotionState = {
 export type PotionCooldown = {
   id: string
   daysLeft: number
+}
+
+export type AccessoryBoostState = {
+  id: string
+  daysLeft: number
+  totalDays: number
+  boost: number
+}
+
+export type HappinessBreakdown = {
+  base: number
+  agePenalty: number
+  housing: number
+  innate: number
+  accessories: number
+  total: number
 }
 
 export type MetaLevel = {

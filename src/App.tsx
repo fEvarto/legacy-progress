@@ -12,6 +12,7 @@ import { useSimulation } from './hooks/useSimulation'
 
 function App() {
   const {
+    heroName,
     age,
     lifespanYears,
     money,
@@ -19,6 +20,7 @@ function App() {
     selectedHouseId,
     activePotions,
     ownedAccessories,
+    accessoryBoosts,
     skills,
     jobProgress,
     generation,
@@ -41,6 +43,9 @@ function App() {
     housingRentDaily,
     netDaily,
     skillXpMultiplier,
+    happiness,
+    happinessMultiplier,
+    happinessBreakdown,
     tabs,
     selectJob,
     setActiveTab,
@@ -72,6 +77,7 @@ function App() {
         <aside className="side-bar">
           <div className="side-scroll">
             <HeroPanel
+              heroName={heroName}
               age={age}
               lifespanYears={lifespanYears}
               money={money}
@@ -88,6 +94,10 @@ function App() {
               currentHouse={currentHouse}
               activePotions={activePotions}
               ownedAccessories={ownedAccessories}
+              accessoryBoosts={accessoryBoosts}
+              happiness={happiness}
+              happinessMultiplier={happinessMultiplier}
+              happinessBreakdown={happinessBreakdown}
               innate={innates.find((innate) => innate.id === selectedInnateId)}
             />
           </div>

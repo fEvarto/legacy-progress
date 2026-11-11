@@ -12,33 +12,43 @@ export const prestigeResearches: PrestigeResearch[] = [
   { id: 'prosperity', title: 'Prosperity', description: '+10% income in every future run.', cost: 15, effect: { type: 'income', value: 0.1 } },
 ]
 
+/** Happiness is a 0-100 score that multiplies all skill XP. */
+export const happinessBase = 80
+export const happinessMax = 100
+/** Maximum points removed from happiness by old age, spread evenly over the lifespan. */
+export const happinessAgePenaltyMax = 35
+/** Buying any accessory grants this one-off happiness boost... */
+export const accessoryHappinessBoost = 12
+/** ...which decays linearly over this many days. */
+export const accessoryHappinessDurationDays = 365
+
 export const housingOptions: Housing[] = [
   {
     id: 'simple-hut',
     title: 'Simple Hut',
     description: 'A humble shelter with basic comforts.',
-    xpBoost: 0.00,
+    happinessBoost: 0,
     rent: 0,
   },
   {
     id: 'stone-cottage',
     title: 'Stone Cottage',
     description: 'Sturdy walls and a warm hearth for better focus.',
-    xpBoost: 0.5,
+    happinessBoost: 8,
     rent: 10,
   },
   {
     id: 'artisan-home',
     title: 'Artisan Home',
-    description: 'A crafted space that inspires faster learning.',
-    xpBoost: 1.25,
+    description: 'A crafted space that inspires a happier daily life.',
+    happinessBoost: 16,
     rent: 20,
   },
   {
     id: 'artisan-mansion',
     title: 'Artisan Mansion',
-    description: 'A grand residence that provides exceptional learning opportunities.',
-    xpBoost: 2.0,
+    description: 'A grand residence that provides exceptional comfort.',
+    happinessBoost: 28,
     rent: 50,
   },
 ]

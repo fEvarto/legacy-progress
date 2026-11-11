@@ -1,4 +1,5 @@
 import type { Accessory, Housing, Potion, PotionCooldown } from '../types'
+import { accessoryHappinessBoost, accessoryHappinessDurationDays } from '../data'
 
 type ShopTabProps = {
   housingOptions: Housing[]
@@ -28,7 +29,7 @@ export const ShopTab = ({
       <section className="panel">
         <div className="panel-header">
           <h2>Housing</h2>
-          <span>Passive XP boost</span>
+          <span>Passive happiness boost</span>
         </div>
         <div className="shop-list">
           {housingOptions.map((house) => (
@@ -38,7 +39,7 @@ export const ShopTab = ({
                 <p>{house.description}</p>
               </div>
               <div className="shop-card-meta">
-                <span>XP +{Math.round(house.xpBoost * 100)}%</span>
+                <span>Happiness +{house.happinessBoost}</span>
                 <button type="button" onClick={() => onBuyHouse(house)}>
                   {house.rent === 0 ? 'Owned' : `${house.rent} per day`}
                 </button>
@@ -94,6 +95,7 @@ export const ShopTab = ({
               <div>
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>
+                <p className="shop-card-note">Purchase boost: +{accessoryHappinessBoost} happiness for {accessoryHappinessDurationDays} days</p>
               </div>
               <div className="shop-card-meta">
                 <span>

@@ -7,6 +7,7 @@ Legacy Progress is a browser-based incremental life simulator built around caree
 - **Life simulation:** Advance time through a hero's lifespan while balancing income, upkeep, housing, and progression.
 - **Career progression:** Select jobs, earn experience, unlock higher roles, and improve wages over time.
 - **Skill development:** Improve skills through work.
+- **Happiness:** A living score driven by age, housing, and temporary boosts that scales XP gained by every skill.
 - **Housing and shop system:** Choose housing and purchase potions or accessories to shape each run.
 - **Innate abilities:** After prestige, receive a newly rolled selection of run-specific innate bonuses and choose one for the next life.
 - **Prestige progression:** End a life near the end of its lifespan to convert run progress into permanent meta points.
